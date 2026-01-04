@@ -4,8 +4,11 @@ The frontend server for the Online Microprocesser IDE Platform.
 
 ## Quick Start
 
+Before starting, ensure that [Node.js](https://nodejs.org/en) version 22.12 is installed on your local system.
+
 Install dependencies.
 ```
+cd ./src/mpide-frontend
 npm install
 ```
 
