@@ -25,7 +25,7 @@ git clone https://github.com/butterman0423/mpide-platform.git
 cd /path/to/mpide-platform
 ```
 
-Follow the instructions in `./src/mpide-frontend/README.md` and `./src/compiler/README.md` to run both the frontend and compiler microservices. Ensure both are running correctly before preceeding.
+Follow the instructions in `./src/mpide-frontend/README.md` and `./src/compiler/README.md` to run both the frontend and compiler microservices. Ensure both are running correctly before proceeding.
 
 Install dependencies, compile the project, and execute the backend service.
 ```
