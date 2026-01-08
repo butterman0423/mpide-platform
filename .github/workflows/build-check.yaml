@@ -1,6 +1,6 @@
 name: Build Checker
 on:
-  pull-request:
+  pull_request:
     branches:
       - 'dev'
       - 'stable'
