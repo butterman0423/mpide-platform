@@ -2,7 +2,7 @@ name: Build Checker
 on:
   pull-request:
     branches:
-      - 'main'
+      - 'dev'
       - 'stable'
 jobs:
   # Since python doesn't exactly have a compile sanity check, rerunning the formatter is good enough.

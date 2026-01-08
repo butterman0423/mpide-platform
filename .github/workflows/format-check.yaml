@@ -2,7 +2,7 @@ name: Code Format Checker
 on:
   pull-request:
     branches:
-      - 'main'
+      - 'dev'
       - 'stable'
 jobs:
   compiler-check:
