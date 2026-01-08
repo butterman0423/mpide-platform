@@ -1,6 +1,6 @@
 name: Build Checker
 on:
-  pull-request:
+  pull_request:
     branches:
       - 'dev'
       - 'stable'
@@ -50,7 +50,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'jetbrains'
-          java-version: '21'
+          java-version: '25'
           cache: 'maven'
           cache-dependency-path: ./pom.xml
       
