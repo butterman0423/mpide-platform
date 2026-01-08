@@ -10,3 +10,13 @@ Additionally, this project is built using [uv](https://docs.astral.sh/uv/guides/
 
 --- TODO ---
 Since this is built and shipped as a Docker containerized service, wait for [STORY-COMP-1](https://github.com/butterman0423/mpide-platform/issues/9) to be completed first.
+
+
+# Code Style and Formatting
+
+To ensure that all contributions has the same code format, run the linter before pushing and creating your PR.
+```
+uv run ruff check --fix
+```
+
+Note that the linter may not be able to automatically correct the errors it detects.

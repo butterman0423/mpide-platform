@@ -1,0 +1,57 @@
+name: Code Format Checker
+on:
+  pull-request:
+    branches:
+      - 'dev'
+      - 'stable'
+jobs:
+  compiler-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ./src/compiler/pyproject.toml
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: 0.9.18
+
+      - name: Codestyle Check on Compiler MS
+        working-directory: ./src/compiler
+        run: uv run ruff check
+
+  frontend-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Node and npm
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.12.0
+
+      - name: Codestyle Check on Frontend
+        working-directory: ./src/mpide-frontend
+        run: |
+          npm install
+          npm run ng -- lint
+
+  backend-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'jetbrains'
+          java-version: '21'
+          cache: 'maven'
+          cache-dependency-path: ./pom.xml
+      
+      - name: Codestyle Check on Backend
+        run: ./mvnw validate

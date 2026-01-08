@@ -34,3 +34,11 @@ java -jar target/mpide-platform
 ```
 
 *For `Windows` OS, replace `./mvnw` with `./mvnw.cmd`.*
+
+# Code Style and Formatting
+
+To ensure that all contributions has the same code format, run the formatter before pushing and creating your PR.
+```
+./mvnw validate
+./mvnw formatter:format
+```
