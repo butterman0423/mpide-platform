@@ -1,12 +1,16 @@
 
 FROM ubuntu:22.04
 
-WORKDIR /app
+ENV DEBIAN_FRONTEND=noninteractive
 
 #Installing python and avrdude
 RUN apt-get update && apt-get install -y avrdude gcc-avr avr-libc binutils-avr avrdude gdb-avr
 
-COPY . /app
+WORKDIR /app
+
+COPY main.py /usr/local/bin/main.py
+
+RUN chmod +X /usr/local/bin/main.py
 
 EXPOSE 3000
 
