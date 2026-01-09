@@ -4,7 +4,6 @@ import tempfile
 import json
 import os
 import struct
-import threading
 import configparser
 import subprocess
 import shutil
