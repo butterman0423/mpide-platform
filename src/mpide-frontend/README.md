@@ -32,6 +32,15 @@ npm run ng -- [arguments]
 
 For example, the command `ng generate component mycomp` is done by executing `npm run ng -- generate component mycomp`.
 
+## Code Style and Formatting
+
+To ensure that all contributions has the same code format, run the linter before pushing and creating your PR.
+```
+npm run lint
+```
+
+Note that the linter may not be able to automatically correct the errors it detects.
+
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
