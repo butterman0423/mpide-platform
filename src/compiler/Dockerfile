@@ -4,13 +4,11 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 #Installing python and avrdude
-RUN apt-get update && apt-get install -y avrdude gcc-avr avr-libc binutils-avr avrdude gdb-avr
+RUN apt-get update && apt-get install -y python3 avrdude gcc-avr avr-libc binutils-avr avrdude gdb-avr && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY main.py /usr/local/bin/main.py
-
-RUN chmod +X /usr/local/bin/main.py
+COPY . /app
 
 EXPOSE 3000
 
