@@ -8,7 +8,7 @@ import threading
 import configparser
 import subprocess
 import shutil
-
+import time
 
 
 
@@ -23,32 +23,40 @@ class ClientHandler(socketserver.StreamRequestHandler):
 
     def handle(self):
         prefix = CONFIG.get("PATHS","tmpDir")
+        curr_time = time.time()
         
         #Probably make the path a better name
-        temp_dir = os.path.join(tempfile.gettempdir, prefix, f"{os.getpid()}")
+        temp_dir = os.path.join(tempfile.gettempdir(), prefix, f"{curr_time}")
         os.makedirs(temp_dir, exist_ok=True)
         try:
             files = self.read_files(temp_dir)
-            elf_file = self.link_files(files,temp_dir)
-            hex_file = self.convert_file(elf_file, temp_dir)
+            elf_file_path = self.link_files(files,temp_dir)
             
-            output_dir = CONFIG.GET("PATHS","outputDir")
-            destination = os.path.join(output_dir, f"{os.getpid()}", hex_file)
-            shutil.copy(hex_file, destination)
+            #Get the path
+            hex_file_path = self.convert_file(elf_file_path, temp_dir)
             
-            self.wfile.write(("Successfully compiled the arduino code").encode("utf-8"))
+            #Get the hex file name
+            hex_file = os.path.basename(hex_file_path)
+            
+            output_dir = CONFIG.get("PATHS","outputDir")
+            destination = os.path.join(output_dir, f"{curr_time}", hex_file)
+            os.makedirs(destination, exist_ok=True)
+            
+            #Makes sure the hex file is in the destination
+            shutil.copy(hex_file_path, destination)
+            
+            self.wfile.write(("Successfully compiled the arduino code").encode("utf-8")) 
         except Exception as ex:
-            self.wfile.write((f"{ex}").encode("utf-8"))
+            self.wfile.write((f"Error on compiling the arduino code: {ex}").encode("utf-8"))
             print(f"Failed: {ex}")
         finally:
+            #Remove temporary file
             shutil.rmtree(temp_dir)
         
         
-    def read_files(self, temp_dir):
-        chunk_size = 4096
-        
+    def read_files(self, temp_dir):    
         #Getting the number of files
-        count_data = self.rfile(4)
+        count_data = self.rfile.read(4)
         if not count_data:
             return []
         
@@ -58,12 +66,16 @@ class ClientHandler(socketserver.StreamRequestHandler):
         
         files = []
         for _ in range(count): 
-            filename_len_data = self.rfile(4)
+            chunk_size = 4096
+            #Getting the length of the file name
+            filename_len_data = self.rfile.read(4)
             filename_len = struct.unpack(">I", filename_len_data)[0]
             
-            filename = self.rfile(filename_len).decode("utf-8")
             
-            file_size_data = self.rfile(8)
+            filename = self.rfile.read(filename_len).decode("utf-8")
+            
+            #Getting the size of the file
+            file_size_data = self.rfile.read(8)
             file_size = struct.unpack(">Q", file_size_data)[0]
             
             file_path = os.path.join(temp_dir, filename)
@@ -74,8 +86,8 @@ class ClientHandler(socketserver.StreamRequestHandler):
                 while remaining_size > 0:
                     if remaining_size < chunk_size:
                         chunk_size = remaining_size
-                    
-                    chunk_data = self.rfile(chunk_size)
+                    #Reading chunks of the file
+                    chunk_data = self.rfile.read(chunk_size)
                     
                     if not chunk_data:
                         break
@@ -92,7 +104,8 @@ class ClientHandler(socketserver.StreamRequestHandler):
         #Right now just keep it as output.elf
         output_elf = os.path.join(temp_dir, "output.elf")
         
-        cmd = ["avr-gcc", "-mmcu=atmega328p", "-Os", "-DF_CPU", "16000000UL", "-o", output_elf] + files
+        #Change this in the future to allow for custom -mmcu and -DF_CPU
+        cmd = ["avr-gcc", "-mmcu=atmega328p", "-Os", "-DF_CPU=16000000UL", "-o", output_elf] + files
         result = subprocess.run(cmd, capture_output=True, text=True, cwd=temp_dir)
 
         if result.returncode != 0:
@@ -100,10 +113,10 @@ class ClientHandler(socketserver.StreamRequestHandler):
         
         return output_elf
 
-    def convert_file(self, elf_file, temp_dir):
-        hex_file = elf_file.replace(".elf",".hex")
+    def convert_file(self, elf_file_path, temp_dir):
+        hex_file = elf_file_path.replace(".elf",".hex")
         
-        cmd = ["avr-objcopy","-O","ihex","-R",".eeprom", elf_file, hex_file]
+        cmd = ["avr-objcopy","-O","ihex","-R",".eeprom", elf_file_path, hex_file]
         result = subprocess.run(cmd, capture_output=True, text=True, cwd=temp_dir)
         
         if result.returncode != 0:
@@ -116,16 +129,13 @@ def main():
     #Fades the "Address already on use" issue
     ForkingServer.allow_reuse_address = True
     
-    #Assuming we're using IPv4
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     host = socket.gethostname()
     port = 3000
     
-    server_socket.bind((host, port))
     print(f"Server is listening {host}:{port}")
     
-    with open(server_socket, None) as server:
-        server.serve_forever(ClientHandler)
+    with ForkingServer((host, port), ClientHandler) as server:
+        server.serve_forever()
 
 
 if __name__ == "__main__":
