@@ -13,7 +13,6 @@ RUN apt-get update &&           \
         gcc-avr                 \
         avr-libc                \
         binutils-avr            \
-        avrdude                 \
         gdb-avr &&              \
     rm -rf /var/lib/apt/lists/*
 
