@@ -6,7 +6,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
 #Installing python and avrdude
-RUN apt-get update && apt-get install -y python3 avrdude gcc-avr avr-libc binutils-avr avrdude gdb-avr && rm -rf /var/lib/apt/lists/*
+RUN apt-get update &&           \
+    apt-get install -y          \
+        python3                 \
+        avrdude                 \
+        gcc-avr                 \
+        avr-libc                \
+        binutils-avr            \
+        avrdude                 \
+        gdb-avr &&              \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
