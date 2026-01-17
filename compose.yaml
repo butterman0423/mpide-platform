@@ -1,1 +1,4 @@
-services: {}
+services:
+  compiler:
+    build: ./src/compiler
+
