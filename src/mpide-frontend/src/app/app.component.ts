@@ -4,7 +4,7 @@ import { FileManagementComponent } from "./components/file-management/file-manag
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FileManagementComponent],
+  imports: [FileManagementComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
