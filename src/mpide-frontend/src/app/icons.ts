@@ -1,8 +1,9 @@
 import { IconDefinition } from '@ant-design/icons-angular';
-import { PlusOutline } from '@ant-design/icons-angular/icons';
+import { DeleteFill, DiffOutline, EditFill, PlusOutline } from '@ant-design/icons-angular/icons';
 
-const icons: IconDefinition[] = [
-    PlusOutline
+export const icons: IconDefinition[] = [
+    PlusOutline,
+    EditFill,
+    DeleteFill,
+    DiffOutline
 ]
-
-export {icons}
