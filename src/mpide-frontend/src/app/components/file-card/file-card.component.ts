@@ -1,4 +1,4 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { IdeFile } from '../../models/file.model';
 

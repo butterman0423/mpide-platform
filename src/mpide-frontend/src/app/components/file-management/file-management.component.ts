@@ -11,6 +11,7 @@ import { IdeFile } from '../../models/file.model';
   styleUrls: ['./file-management.component.css']
 })
 export class FileManagementComponent{
+  //Dummy data
   fileList = signal<IdeFile[]>(
     [
     {fileName: "hi.txt", fileLink: "/app/user123/hi.txt"},
