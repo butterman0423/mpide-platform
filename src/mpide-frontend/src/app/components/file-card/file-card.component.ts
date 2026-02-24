@@ -1,12 +1,11 @@
-import { Component, input, OnInit, signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzButtonModule } from 'ng-zorro-antd/button';
 import { IdeFile } from '../../models/file.model';
 
 
 @Component({
   selector: 'app-file-card',
-  imports: [NzIconModule, NzButtonModule],
+  imports: [NzIconModule],
   templateUrl: './file-card.component.html',
   styleUrls: ['./file-card.component.css']
 })
@@ -18,7 +17,7 @@ export class FileCardComponent {
   }
 
   handleEdit(){
-    alert("Edit");
+    alert("edit");
   }
 
   handleDelete(){
