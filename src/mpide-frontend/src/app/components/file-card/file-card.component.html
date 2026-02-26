@@ -1,10 +1,14 @@
 <div class="flex flex-row mx-1 items-stretch gap-0">
   <div 
   class="flex flex-row items-center gap-2 cursor-pointer flex-1 hover:bg-[#54667a]" 
-  (click)="handleSelect()"
-  (keydown.enter)="handleSelect()"
-  (keydown.space)="handleSelect()"
+    [ngClass]="{
+    'bg-[#54667a]': fileSelectionService.selectedFile()?.fileName === file().fileName
+  }"
+  (click)="handleSelect(file())"
+  (keydown.enter)="handleSelect(file())"
+  (keydown.space)="handleSelect(file())"
   tabindex="0"
+  
   role="button"
   >
     <nz-icon nzType="diff" nzTheme="outline" />

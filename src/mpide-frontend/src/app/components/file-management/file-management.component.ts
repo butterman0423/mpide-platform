@@ -14,9 +14,21 @@ export class FileManagementComponent{
   //Dummy data
   fileList = signal<IdeFile[]>(
     [
-    {fileName: "hi.txt", fileLink: "/app/user123/hi.txt"},
-    {fileName: "main.c", fileLink: "/app/user123/main.c"},
-    {fileName: "monkey.c", fileLink: "/app/user123/monkey.c"}
+      {
+        fileName: "hi.txt", 
+        fileLink: "/app/user123/hi.txt", 
+        fileContent: 'function x() {\nconsole.log("Hello world!");\n}'
+      },
+      {
+        fileName: "main.c", 
+        fileLink: "/app/user123/main.c",
+        fileContent: 'function x() {\nconsole.log("YERRRRRR");\n}'
+      },
+      {
+        fileName: "monkey.c", 
+        fileLink: "/app/user123/monkey.c", 
+        fileContent: 'function x() {\nconsole.log("le butter is le butter");\n}'
+      }
     ]
   );
 
