@@ -1,6 +1,6 @@
 import { Component, PLATFORM_ID, inject, effect } from '@angular/core';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
-import { isPlatformBrowser, CommonModule, NgIf } from '@angular/common';
+import { isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileSelection } from '../../services/file-selection';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -16,8 +16,9 @@ export class EditorPanel {
   isBrowser = isPlatformBrowser(this.platformId);
   editorOptions = {theme: 'vs-dark', language: 'javascript'};
   code: string | undefined;
+  public fileSelectionService = inject(FileSelection);
 
-  constructor(public fileSelectionService: FileSelection) {
+  constructor() {
     effect(() => {
       const file = this.fileSelectionService.selectedFile();
 

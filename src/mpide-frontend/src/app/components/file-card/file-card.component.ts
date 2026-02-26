@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, inject } from '@angular/core';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { IdeFile } from '../../models/file.model';
 import { FileSelection } from '../../services/file-selection';
@@ -13,8 +13,8 @@ import { CommonModule } from '@angular/common';
 })
 export class FileCardComponent {
   file = input.required<IdeFile>();
+  public fileSelectionService = inject(FileSelection);
 
-  constructor(public fileSelectionService: FileSelection) {}
 
   handleSelect(file: IdeFile){
     // alert(file.fileName)
