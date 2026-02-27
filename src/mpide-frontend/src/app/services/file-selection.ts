@@ -10,5 +10,9 @@ export class FileSelection {
 
   selectFile(file: IdeFile) {
     this.selectedFile.set(file);
+  } 
+
+  clearFile() {
+    this.selectedFile.set(null);
   }
 }

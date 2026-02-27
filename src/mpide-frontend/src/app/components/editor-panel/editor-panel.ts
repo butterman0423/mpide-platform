@@ -27,6 +27,11 @@ export class EditorPanel {
       }
     });
   }
+
+  handleDelete(){
+    this.fileSelectionService.clearFile();
+    this.code = '';
+  }
   
 
 }

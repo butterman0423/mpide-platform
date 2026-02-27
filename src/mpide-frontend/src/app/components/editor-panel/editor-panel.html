@@ -4,6 +4,7 @@
         <div class="h-[4vh] w-fit bg-[#334155] text-white px-3 flex items-center justify-center gap-2">
         <nz-icon nzType="diff" nzTheme="outline" />
         <p class = "text-sm">{{ fileSelectionService.selectedFile()?.fileName }}</p>
+        <nz-icon nzType="close" nzTheme="outline" (click) = "handleDelete()" class="hover:bg-[#54667a]"/>
         </div>
     }
     </div>
