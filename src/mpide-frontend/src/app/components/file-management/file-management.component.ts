@@ -1,9 +1,11 @@
-import { Component, ElementRef, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FileCardComponent } from '../file-card/file-card.component';
 import { IdeFile } from '../../models/file.model';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FileInsertion } from '../../services/file-insertion';
+import { FileSelection } from '../../services/file-selection';
 
 @Component({
   selector: 'app-file-management',
@@ -14,6 +16,8 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 export class FileManagementComponent{
   protected addFile = false;
   protected fileError = false;
+  private fileInsertionService = inject(FileInsertion);
+  private fileSelectionService = inject(FileSelection);
   //Dummy data
   
 
@@ -54,24 +58,23 @@ export class FileManagementComponent{
   handleAddFile(e: Event): void {
     e.preventDefault();
     
-    const name = this.fileForm.get("newFile")?.value?.trim();
+    const name = this.fileForm.get("newFile")?.value ?? "";
 
-    if(!name){
-      this.fileError = true;
-      return;
+    try{
+      const newFile: IdeFile = this.fileInsertionService.insertFile(name);
+
+      //reset everything
+      this.fileError = false;
+      this.addFile = false;
+      this.fileForm.reset();
+
+      this.fileList.update(files => [...files, newFile]);
+      this.fileSelectionService.selectFile(newFile)
     }
 
-    this.fileError = false;
-    this.addFile = false;
-    this.fileForm.reset();
-
-    this.fileList.update(files => [...files,
-      {
-        fileName: `${name}.cpp`,
-        fileLink: `/app/user123/${name}.cpp`,
-        fileContent: ""
-      }
-    ]);
+    catch(e){
+      this.fileError = true;
+    }
     
   }
 
