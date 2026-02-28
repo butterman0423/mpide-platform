@@ -15,23 +15,27 @@ import { FileStoreService } from '../../services/file-store';
 })
 export class FileCardComponent {
   file = input.required<IdeFile>();
+  showModal = signal<boolean>(false);
   public fileSelectionService = inject(FileSelection);
   isBeingEdited = signal<boolean>(false);
   newFileName = '';
 
   public fileStoreList = inject(FileStoreService);
 
+
   @Output() fileSelected = new EventEmitter<string>();
+  @Output() deleteFile = new EventEmitter<IdeFile>();
 
   //Emit to parent if the user is trying to add a file at the same time. This just cancels the insertion for now
-  notifyParent(): void {
-    this.fileSelected.emit("true");
+  //Or trying to delete a file
+  notifyParent<T extends string | IdeFile>(emitter: EventEmitter<T>, value: T): void {
+    emitter.emit(value);
   }
 
   handleSelect(file: IdeFile){
     // alert(file.fileName)
     this.fileSelectionService.selectFile(file);
-    this.notifyParent();
+    this.notifyParent(this.fileSelected, "true");
   }
 
   handleEditStatus(){
@@ -87,7 +91,16 @@ export class FileCardComponent {
     this.isBeingEdited.set(false);
   }
 
-  handleDelete(){
-    alert("delete");
+  openModal(){
+    this.showModal.set(true);
+  }
+
+  closeModal(){
+    this.showModal.set(false);
+  }
+
+  handleDelete(file: IdeFile){
+    this.notifyParent(this.deleteFile, file);
+    this.closeModal();
   }
 }

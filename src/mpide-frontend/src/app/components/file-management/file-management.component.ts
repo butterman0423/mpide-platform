@@ -7,6 +7,8 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FileInsertion } from '../../services/file-insertion';
 import { FileSelection } from '../../services/file-selection';
 import { FileStoreService } from '../../services/file-store';
+import { FileDeletion } from '../../services/file-deletion';
+import { EventService } from '../../services/event-service';
 
 @Component({
   selector: 'app-file-management',
@@ -21,6 +23,8 @@ export class FileManagementComponent{
 
   private fileInsertionService = inject(FileInsertion);
   private fileSelectionService = inject(FileSelection);
+  private fileDeletionService = inject(FileDeletion);
+  private eventService = inject(EventService);
   public fileStoreList = inject(FileStoreService);
 
   //The browser automatically focuses on the input field
@@ -70,6 +74,13 @@ export class FileManagementComponent{
     this.fileError = false;
     this.addFile = false;
     this.fileForm.reset();
+  }
+
+  deleteFile(file: IdeFile): void {
+    this.fileStoreList.fileList.update(() => this.fileDeletionService.deleteFile(file, this.fileStoreList.fileList()));
+    if(this.fileSelectionService.selectedFile() !== null && this.fileSelectionService.selectedFile()?.fileName === file.fileName){
+      this.eventService.sendDeleteCode(file);
+    }
   }
 
 }
