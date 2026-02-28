@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FileCardComponent } from '../file-card/file-card.component';
@@ -6,6 +6,7 @@ import { IdeFile } from '../../models/file.model';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FileInsertion } from '../../services/file-insertion';
 import { FileSelection } from '../../services/file-selection';
+import { FileStoreService } from '../../services/file-store';
 import { FileDeletion } from '../../services/file-deletion';
 
 @Component({
@@ -22,27 +23,7 @@ export class FileManagementComponent{
   private fileInsertionService = inject(FileInsertion);
   private fileSelectionService = inject(FileSelection);
   private fileDeletionService = inject(FileDeletion);
-
-  //Dummy data
-  fileList = signal<IdeFile[]>(
-    [
-      {
-        fileName: "hi.txt", 
-        fileLink: "/app/user123/hi.txt", 
-        fileContent: 'function x() {\nconsole.log("Hello world!");\n}'
-      },
-      {
-        fileName: "main.c", 
-        fileLink: "/app/user123/main.c",
-        fileContent: 'function x() {\nconsole.log("YERRRRRR");\n}'
-      },
-      {
-        fileName: "monkey.c", 
-        fileLink: "/app/user123/monkey.c", 
-        fileContent: 'function x() {\nconsole.log("le butter is le butter");\n}'
-      }
-    ]
-  );
+  public fileStoreList = inject(FileStoreService);
 
   //The browser automatically focuses on the input field
   @ViewChild('fileInput') set inputRef(content: ElementRef) {
@@ -64,12 +45,12 @@ export class FileManagementComponent{
     const name = this.fileForm.get("newFile")?.value?.toLowerCase() ?? "";
 
     try{
-      const newFile: IdeFile = this.fileInsertionService.insertFile(name, this.fileList());
+      const newFile: IdeFile = this.fileInsertionService.insertFile(name, this.fileStoreList.fileList());
 
       //reset everything
       this.resetAddFile();
 
-      this.fileList.update(files => [...files, newFile]);
+      this.fileStoreList.fileList.update(files => [...files, newFile]);
       this.fileSelectionService.selectFile(newFile)
     }
 
@@ -94,7 +75,7 @@ export class FileManagementComponent{
   }
 
   deleteFile(file: IdeFile): void {
-    this.fileDeletionService.deleteFile(file, this.fileList());
+    this.fileDeletionService.deleteFile(file, this.fileStoreList.fileList());
   }
 
 }
