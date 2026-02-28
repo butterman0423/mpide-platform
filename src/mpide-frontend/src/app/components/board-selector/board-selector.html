@@ -1,0 +1,58 @@
+<!-- Trigger Button -->
+<button class="board-btn" [class.connected]="boardService.connectedBoard()" (click)="openModal()">
+  @if (boardService.connectedBoard()) {
+    <span class="dot connected-dot"></span>
+    {{ boardService.connectedBoard()!.productName }}
+  } @else {
+    <span class="dot disconnected-dot"></span>
+    No Device Connected
+  }
+</button>
+
+<!-- Modal Overlay -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Connect to Device</h2>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+
+      <p class="modal-subtitle">Select a connected device</p>
+
+      <div class="device-list">
+        @for (device of boardService.availableDevices(); track device.serialNumber) {
+          <div class="device-card" [class.selected]="isSelected(device)" (click)="selectDevice(device)">
+            <div class="radio-circle" [class.radio-filled]="isSelected(device)">
+              @if (isSelected(device)) { <div class="radio-inner"></div> }
+            </div>
+            <div class="device-info">
+              <span class="device-name">{{ device.productName ?? 'Arduino' }}</span>
+              <span class="device-status connected-text">Connected</span>
+            </div>
+          </div>
+        }
+
+        <div class="device-card disabled">
+          <div class="radio-circle"></div>
+          <div class="device-info">
+            <span class="device-name">No device detected</span>
+            <span class="device-status">Not connected</span>
+          </div>
+        </div>
+      </div>
+
+      @if (error()) {
+        <p class="error-msg">{{ error() }}</p>
+      }
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="addDevice()">+ Pair New Device</button>
+        <div class="footer-right">
+          <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+          <button class="btn-connect" [disabled]="!selectedDevice()" (click)="connect()">Connect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

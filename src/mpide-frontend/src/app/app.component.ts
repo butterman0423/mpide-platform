@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
-// import { RouterOutlet } from '@angular/router';
 import { FileManagementComponent } from "./components/file-management/file-management.component";
 import { EditorPanel } from './components/editor-panel/editor-panel';
+import { BoardSelectorComponent } from './components/board-selector/board-selector';
 
 @Component({
   selector: 'app-root',
-  imports: [FileManagementComponent, EditorPanel],
+  imports: [FileManagementComponent, EditorPanel, BoardSelectorComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
