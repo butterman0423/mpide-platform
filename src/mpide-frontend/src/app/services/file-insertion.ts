@@ -6,17 +6,32 @@ import { IdeFile } from '../models/file.model';
 })
 export class FileInsertion {
     
-  insertFile(fileName: string): IdeFile {
+  insertFile(fileName: string, files: IdeFile[]): IdeFile {
     if (fileName === null || !fileName.trim()){
-        throw Error("fileName can't be empty");
+        throw Error("File must have a name.");
     }
 
-    const cppFile = `${fileName.trim()}.cpp`;
+    const fileVersion = this.fileExists(fileName, files);
+    const cppFile = fileVersion === 0 ? `${fileName.trim()}.cpp` : `${fileName.trim()}_${fileVersion}.cpp`;
 
     return {
         fileName: cppFile,
         fileLink: `/app/user123/${cppFile}`,
         fileContent: ""
     };
+  }
+
+
+  fileExists(fileName: string, files: IdeFile[]): number {
+    let version = 0;
+
+    files.forEach(f => {
+        //file_1.cpp => file_1 => file
+        const name = f.fileName.split(".")[0].split("_")[0];
+        if(fileName === name){
+            version += 1;
+        }
+    })
+    return version;
   }
 }

@@ -6,3 +6,9 @@ html, body { height: 100%; margin: 0; }
 input {
     padding-left: 4px;
 }
+
+@layer components{
+    .card-buttons {
+        @apply cursor-pointer hover:bg-[#54667a] flex items-center justify-center px-1; 
+    }
+}

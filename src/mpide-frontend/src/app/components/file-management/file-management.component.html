@@ -8,20 +8,35 @@
   <nz-divider/>
   <div class="w-full bg-[#334155] text-white flex-1 flex flex-col gap-0 justify-start">
       @for (file of fileList(); track file.fileLink) {
-        <app-file-card [file]="file"/>
+        <!--So the function doesn't run everytime-->
+        <app-file-card [file]="file" (fileSelected)="addFile ? resetAddFile() : null"/>
       }
       @if (addFile) { 
-        <div class="ml-10 mr-15 bg-[#1E293B]">
-          <form [formGroup]="fileForm" (keydown.enter)="handleAddFile($event)">
-            <input #fileInput formControlName="newFile" 
-            class="w-full border-1 focus:outline-none"
-            [class.border-red-500]="fileError"
-            [class.border-[#1890FF]]="!fileError"
+        <div class="ml-10 mr-4 bg-[#1E293B]">
+            <form 
+            class="flex flex-row justify-center gap-0"
+            [formGroup]="fileForm" 
+            (ngSubmit)="handleAddFile()"
             >
-          </form>
+              <input #fileInput formControlName="newFile" 
+              class="w-full border-1 focus:outline-none"
+              [class.border-red-500]="fileError"
+              [class.border-[#1890FF]]="!fileError"
+              >
+
+              <button type="submit" class="card-buttons bg-[#1890FF] hover:bg-[#60A5FA]">
+                <nz-icon nzType="check" nzTheme="outline" />
+              </button>
+
+              <button type="button" (click)="resetAddFile()" class="card-buttons bg-[#7F1D1D] hover:bg-[#991B1B]">
+                <nz-icon nzType="close" nzTheme="outline" />
+              </button>
+
+            </form>
+
           @if (fileError) {
-            <p class="text-red-500">
-              File must have a name.
+            <p class="text-red-500 mr-16">
+              {{errorMessage}}
             </p>
           }
         </div>

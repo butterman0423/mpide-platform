@@ -15,12 +15,13 @@ import { FileSelection } from '../../services/file-selection';
 })
 export class FileManagementComponent{
   protected addFile = false;
-  protected fileError = false;
+  protected fileError  = false;
+  protected errorMessage = "";
+
   private fileInsertionService = inject(FileInsertion);
   private fileSelectionService = inject(FileSelection);
-  //Dummy data
-  
 
+  //Dummy data
   fileList = signal<IdeFile[]>(
     [
       {
@@ -41,6 +42,7 @@ export class FileManagementComponent{
     ]
   );
 
+  //The browser automatically focuses on the input field
   @ViewChild('fileInput') set inputRef(content: ElementRef) {
     if (content) {
       content.nativeElement.focus();
@@ -55,27 +57,38 @@ export class FileManagementComponent{
     this.addFile = true;
   }
 
-  handleAddFile(e: Event): void {
-    e.preventDefault();
+  handleAddFile(): void {
     
     const name = this.fileForm.get("newFile")?.value ?? "";
 
     try{
-      const newFile: IdeFile = this.fileInsertionService.insertFile(name);
+      const newFile: IdeFile = this.fileInsertionService.insertFile(name, this.fileList());
 
       //reset everything
-      this.fileError = false;
-      this.addFile = false;
-      this.fileForm.reset();
+      this.resetAddFile();
 
       this.fileList.update(files => [...files, newFile]);
       this.fileSelectionService.selectFile(newFile)
     }
 
-    catch(e){
+    catch(e: unknown ){
       this.fileError = true;
+
+      if (e instanceof Error) {
+        this.errorMessage = e.message;
+      } 
+      else {
+        //Fallback
+        this.errorMessage = "File must have a name.";
+      }
     }
     
+  }
+  
+  resetAddFile(): void {
+    this.fileError = false;
+    this.addFile = false;
+    this.fileForm.reset();
   }
 
 }
