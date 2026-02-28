@@ -1,4 +1,4 @@
-<div class="flex flex-row mx-1 items-stretch gap-0">
+<div class="flex flex-row mx-4 items-stretch justify-center gap-0 ">
   <div 
   class="flex flex-row items-center gap-2 cursor-pointer flex-1 hover:bg-[#54667a]" 
     [ngClass]="{
@@ -15,10 +15,11 @@
     <p class="m-0">{{file().fileName}}</p>
   </div>
   <div class="flex flex-row items-stretch gap-0">
-    <button (click)="handleEdit()" class="cursor-pointer hover:bg-[#54667a] flex items-center justify-center px-1">
+    <!-- Lowk don't know why event.stopPropagation helps the emitter-->
+    <button (click)="handleEdit(); $event.stopPropagation()" class="card-buttons">
       <nz-icon nzType="edit" nzTheme="fill" />
     </button>
-    <button (click)="handleDelete()" class="cursor-pointer hover:bg-[#54667a] flex items-center justify-center px-1">
+    <button (click)="handleDelete(); $event.stopPropagation()" class="card-buttons">
       <nz-icon nzType="delete" nzTheme="fill" />
     </button>
   </div>
