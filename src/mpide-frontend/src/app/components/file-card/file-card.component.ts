@@ -17,7 +17,7 @@ export class FileCardComponent {
   file = input.required<IdeFile>();
   public fileSelectionService = inject(FileSelection);
   isBeingEdited = signal<boolean>(false);
-  newFileName:string = '';
+  newFileName = '';
 
   public fileStoreList = inject(FileStoreService);
 
