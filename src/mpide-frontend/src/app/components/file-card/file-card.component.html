@@ -19,9 +19,40 @@
     <button (click)="handleEdit(); $event.stopPropagation()" class="card-buttons">
       <nz-icon nzType="edit" nzTheme="fill" />
     </button>
-    <button (click)="handleDelete(); $event.stopPropagation()" class="card-buttons">
+    <button (click)="openModal(); $event.stopPropagation()" class="card-buttons">
       <nz-icon nzType="delete" nzTheme="fill" />
     </button>
   </div>
 
 </div>
+
+@if (showModal()) {
+  <button class="modal-overlay"
+    (click)="closeModal()"
+    (keydown.escape)="closeModal()"
+    aria-label="Close modal">
+    <div class="modal"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+      tabindex="0">
+      <div class="flex flex-col gap-6 w-full ">
+      <div class="border-1 border-[#D1D5DB] rounded-md p-2 flex flex-row items-center">
+        <nz-icon nzType="exclamation-circle" nzTheme="outline" class="flex-shrink-0"/>
+        <h2 class="flex-1 text-center m-0">{{file().fileName}} will be deleted</h2>
+      </div>
+      <div class="flex flex-row gap-0 w-full gap-3">
+        <button 
+        (click)="closeModal()"
+        class="cursor-pointer border-1 border-[#D1D5DB] rounded-md w-[50%] py-2 hover:bg-[#00000033]">
+          Cancel
+        </button>
+        <button 
+        class="cursor-pointer border-1 border-[#D1D5DB] rounded-md w-[50%] py-2 bg-[#7F1D1D] hover:bg-[#991B1B]">
+          Delete
+        </button>
+      </div>
+      </div>
+
+    </div>
+  </button>
+}

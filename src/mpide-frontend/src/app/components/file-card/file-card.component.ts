@@ -1,4 +1,4 @@
-import { Component, input, inject, Output, EventEmitter } from '@angular/core';
+import { Component, input, inject, Output, EventEmitter, signal } from '@angular/core';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { IdeFile } from '../../models/file.model';
 import { FileSelection } from '../../services/file-selection';
@@ -14,6 +14,7 @@ import { FileDeletion } from '../../services/file-deletion';
 })
 export class FileCardComponent {
   file = input.required<IdeFile>();
+  showModal = signal<boolean>(false);
   public fileSelectionService = inject(FileSelection);
 
 
@@ -34,6 +35,14 @@ export class FileCardComponent {
 
   handleEdit(){
     alert("edit");
+  }
+
+  openModal(){
+    this.showModal.set(true);
+  }
+
+  closeModal(){
+    this.showModal.set(false);
   }
 
   handleDelete(file: IdeFile){

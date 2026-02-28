@@ -9,7 +9,7 @@
   <div class="w-full bg-[#334155] text-white flex-1 flex flex-col gap-0 justify-start">
       @for (file of fileList(); track file.fileLink) {
         <!--So the function doesn't run everytime-->
-        <app-file-card [file]="file" (fileSelected)="addFile ? resetAddFile() : null" (deleteFile)="deleteFile()"/>
+        <app-file-card [file]="file" (fileSelected)="addFile ? resetAddFile() : null" (deleteFile)="deleteFile($event)"/>
       }
       @if (addFile) { 
         <div class="ml-10 mr-4 bg-[#1E293B]">
