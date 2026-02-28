@@ -6,6 +6,7 @@ import { IdeFile } from '../../models/file.model';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FileInsertion } from '../../services/file-insertion';
 import { FileSelection } from '../../services/file-selection';
+import { FileDeletion } from '../../services/file-deletion';
 
 @Component({
   selector: 'app-file-management',
@@ -20,6 +21,7 @@ export class FileManagementComponent{
 
   private fileInsertionService = inject(FileInsertion);
   private fileSelectionService = inject(FileSelection);
+  private fileDeletionService = inject(FileDeletion);
 
   //Dummy data
   fileList = signal<IdeFile[]>(
@@ -89,6 +91,10 @@ export class FileManagementComponent{
     this.fileError = false;
     this.addFile = false;
     this.fileForm.reset();
+  }
+
+  deleteFile(file: IdeFile): void {
+    this.fileDeletionService.deleteFile(file, this.fileList());
   }
 
 }
