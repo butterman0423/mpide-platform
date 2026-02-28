@@ -59,6 +59,13 @@ export class FileCardComponent {
 
     if (!validNameRegex.test(trimmedName)) return;
 
+    
+    for (const file of this.fileStoreList.fileList()){
+      if (file.fileName === newFileName && newFileName !== oldfile.fileName){
+        return;
+      }
+    }
+
     newFileName = trimmedName;
     this.newFileName = trimmedName;
 
