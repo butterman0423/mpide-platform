@@ -101,5 +101,6 @@ export class FileCardComponent {
 
   handleDelete(file: IdeFile){
     this.notifyParent(this.deleteFile, file);
+    this.closeModal();
   }
 }

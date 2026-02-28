@@ -75,7 +75,7 @@ export class FileManagementComponent{
   }
 
   deleteFile(file: IdeFile): void {
-    this.fileDeletionService.deleteFile(file, this.fileStoreList.fileList());
+    this.fileStoreList.fileList.update(() => this.fileDeletionService.deleteFile(file, this.fileStoreList.fileList()));
   }
 
 }
