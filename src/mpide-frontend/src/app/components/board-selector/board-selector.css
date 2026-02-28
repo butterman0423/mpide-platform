@@ -3,15 +3,17 @@
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
-  background: transparent;
+  background: #7F1D1D;
   color: #ffffff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 800;
   transition: background 0.2s;
 }
-.board-btn:hover { background: rgba(255,255,255,0.08); }
+.board-btn:hover { background: #6b1919; }
 .board-btn.connected { color: #fff; }
 
 .dot {
