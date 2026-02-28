@@ -27,9 +27,12 @@ export class FileInsertion {
 
     files.forEach(f => {
         //file_1.cpp => file_1 => file
-        const name = f.fileName.split(".")[0].split("_")[0];
-        if(fileName === name){
-            version += 1;
+        const nameVersion = f.fileName.split(".")[0];
+        const name = nameVersion.slice(0, nameVersion.lastIndexOf("_"))
+
+        //incase the use puts file_1 or file_5_3 as the fileName
+        if(fileName === name || fileName === nameVersion){
+          version += 1;
         }
     })
     return version;
