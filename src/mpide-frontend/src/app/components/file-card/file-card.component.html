@@ -11,17 +11,40 @@
   
   role="button"
   >
-    <nz-icon nzType="diff" nzTheme="outline" />
-    <p class="m-0">{{file().fileName}}</p>
+    
+    <nz-icon nzType="diff" nzTheme="outline" /> 
+    @if(isBeingEdited()) {
+      <input 
+        class="m-0 bg-transparent border border-gray-400 text-white px-1"
+        [(ngModel)]="newFileName"
+        (keyup.enter) = "handleEditFileName(file(), newFileName)"
+      />
+    }
+    @else {
+      <p class="m-0">{{ file().fileName }}</p>
+    }
   </div>
   <div class="flex flex-row items-stretch gap-0">
     <!-- Lowk don't know why event.stopPropagation helps the emitter-->
-    <button (click)="handleEdit(); $event.stopPropagation()" class="card-buttons">
+    @if(isBeingEdited()){
+      <button type="submit" class="card-buttons bg-[#1890FF] hover:bg-[#60A5FA]" (click) = "handleEditFileName(file(), newFileName)">
+        <nz-icon nzType="check" nzTheme="outline" />
+      </button>
+
+      <button type="button" class="card-buttons bg-[#7F1D1D] hover:bg-[#991B1B]" (click) = "handleEditCancel()">
+        <nz-icon nzType="close" nzTheme="outline" />
+      </button>
+    }
+    @else{
+    <button (click)="handleEditStatus(); $event.stopPropagation()" class="card-buttons">
       <nz-icon nzType="edit" nzTheme="fill" />
     </button>
     <button (click)="handleDelete(); $event.stopPropagation()" class="card-buttons">
       <nz-icon nzType="delete" nzTheme="fill" />
     </button>
+  }
+
+
   </div>
 
 </div>
