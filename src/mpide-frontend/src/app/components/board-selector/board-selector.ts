@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BoardService } from '../../services/board';
 
@@ -10,11 +10,10 @@ import { BoardService } from '../../services/board';
   styleUrl: './board-selector.css'
 })
 export class BoardSelectorComponent {
+  boardService = inject(BoardService);
   showModal = signal(false);
   selectedDevice = signal<USBDevice | null>(null);
   error = signal<string | null>(null);
-
-  constructor(public boardService: BoardService) {}
 
   async openModal() {
     this.error.set(null);
@@ -40,8 +39,8 @@ export class BoardSelectorComponent {
     try {
       await this.boardService.connect(device);
       this.closeModal();
-    } catch (e: any) {
-      this.error.set(e.message ?? 'Failed to connect');
+    } catch (e: Error | unknown) {
+      this.error.set(e instanceof Error ? e.message : 'Failed to connect');
     }
   }
 

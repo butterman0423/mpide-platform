@@ -11,8 +11,14 @@
 
 <!-- Modal Overlay -->
 @if (showModal()) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay"
+    (click)="closeModal()"
+    (keydown.escape)="closeModal()"
+    tabindex="0"
+    role="dialog">
+    <div class="modal"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Connect to Device</h2>
         <button class="close-btn" (click)="closeModal()">✕</button>
@@ -22,7 +28,14 @@
 
       <div class="device-list">
         @for (device of boardService.availableDevices(); track device.serialNumber) {
-          <div class="device-card" [class.selected]="isSelected(device)" (click)="selectDevice(device)">
+          <div class="device-card"
+            [class.selected]="isSelected(device)"
+            (click)="selectDevice(device)"
+            (keydown.enter)="selectDevice(device)"
+            (keydown.space)="selectDevice(device)"
+            tabindex="0"
+            role="radio"
+            [attr.aria-checked]="isSelected(device)">
             <div class="radio-circle" [class.radio-filled]="isSelected(device)">
               @if (isSelected(device)) { <div class="radio-inner"></div> }
             </div>

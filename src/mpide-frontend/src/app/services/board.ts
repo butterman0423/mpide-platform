@@ -25,18 +25,18 @@ export class BoardService {
     );
   }
 
-  async requestNewDevice(): Promise<USBDevice | null> {
-    try {
-      const device = await navigator.usb.requestDevice({
-        filters: [{ vendorId: this.ARDUINO_VENDOR_ID }]
-      });
-      await this.refreshDevices();
-      return device;
-    } catch (e: any) {
-      if (e.name === 'NotFoundError') return null;
-      throw e;
-    }
+async requestNewDevice(): Promise<USBDevice | null> {
+  try {
+    const device = await navigator.usb.requestDevice({
+      filters: [{ vendorId: this.ARDUINO_VENDOR_ID }]
+    });
+    await this.refreshDevices();
+    return device;
+  } catch (e: Error | unknown) {
+    if (e instanceof Error && e.name === 'NotFoundError') return null;
+    throw e;
   }
+}
 
   async connect(device: USBDevice): Promise<void> {
     if (this.connectedBoard()) await this.disconnect();
@@ -50,14 +50,17 @@ export class BoardService {
       device
     });
 
-    navigator.usb.addEventListener('disconnect', ((event: USBConnectionEvent) => {
-      if (event.device === device) this.connectedBoard.set(null);}) as EventListener, { once: true });
+    navigator.usb.addEventListener('disconnect', ((event: USBConnectionEvent) => {if (event.device === device) this.connectedBoard.set(null);}) as EventListener, { once: true });
   }
 
-  async disconnect(): Promise<void> {
-    const board = this.connectedBoard();
-    if (!board) return;
-    try { await board.device.close(); } catch {}
-    this.connectedBoard.set(null);
+async disconnect(): Promise<void> {
+  const board = this.connectedBoard();
+  if (!board) return;
+  try {
+    await board.device.close();
+  } catch (e: Error | unknown) {
+    console.error('Error closing device:', e);
   }
+  this.connectedBoard.set(null);
+}
 }
