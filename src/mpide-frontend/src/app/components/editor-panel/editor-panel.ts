@@ -4,10 +4,11 @@ import { isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileSelection } from '../../services/file-selection';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { BoardSelectorComponent } from '../board-selector/board-selector';
 
 @Component({
   selector: 'app-editor-panel',
-  imports: [MonacoEditorModule, FormsModule, NzIconModule],
+  imports: [MonacoEditorModule, FormsModule, NzIconModule, BoardSelectorComponent],
   templateUrl: './editor-panel.html',
   styleUrl: './editor-panel.css',
 })

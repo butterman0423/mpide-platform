@@ -1,15 +1,28 @@
 @if (isBrowser) {
-    <div class = "w-full bg-[#1E293B] h-[4vh]">
-    @if (fileSelectionService.selectedFile()){
-        <div class="h-[4vh] w-fit bg-[#334155] text-white px-3 flex items-center justify-center gap-2">
-        <nz-icon nzType="diff" nzTheme="outline" />
-        <p class = "text-sm">{{ fileSelectionService.selectedFile()?.fileName }}</p>
-        <nz-icon nzType="close" nzTheme="outline" (click) = "handleDelete()" class="hover:bg-[#54667a]"/>
-        </div>
-    }
+    <div class="w-full bg-[#1E293B] h-[4vh] flex items-center justify-between">
+      <!-- Left side: file tab -->
+      <div class="flex h-full">
+        @if (fileSelectionService.selectedFile()){
+          <div class="h-[4vh] w-fit bg-[#334155] text-white px-3 flex items-center justify-center gap-2">
+            <nz-icon nzType="diff" nzTheme="outline" />
+            <p class="text-sm">{{ fileSelectionService.selectedFile()?.fileName }}</p>
+            <nz-icon nzType="close" nzTheme="outline" (click)="handleDelete()" class="hover:bg-[#54667a]"/>
+          </div>
+        }
+      </div>
+
+      <!-- Right side: action buttons -->
+      <div class="flex items-center gap-2 px-3">
+        <button class="text-xs px-3 py-1 bg-[#379409] text-white rounded hover:bg-[#2d7a07]" 
+         style="font-family: 'Roboto', sans-serif; font-weight: 800;">Save</button>
+         <button class="text-xs px-3 py-1 bg-[#3B82F6] text-white rounded hover:bg-[#2563eb]"
+         style="font-family: 'Roboto', sans-serif; font-weight: 800;">Execute</button>
+        <app-board-selector />
+      </div>
     </div>
-    <ngx-monaco-editor class = "flex-1 flex flex-col min-w-0 h-full"
-    [options]="editorOptions" 
-    [(ngModel)]="code">
+
+    <ngx-monaco-editor class="flex-1 flex flex-col min-w-0 h-full"
+      [options]="editorOptions" 
+      [(ngModel)]="code">
     </ngx-monaco-editor>
-    }
+}
