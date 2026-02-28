@@ -1,3 +1,4 @@
+<!-- Trigger Button -->
 <button class="board-btn" [class.connected]="boardService.connectedBoard()" (click)="openModal()">
   @if (boardService.connectedBoard()) {
     <span class="dot connected-dot"></span>
@@ -8,12 +9,11 @@
   }
 </button>
 
+<!-- Modal Overlay -->
 @if (showModal()) {
-  <div class="modal-overlay"
+  <button class="modal-overlay"
     (click)="closeModal()"
     (keydown.escape)="closeModal()"
-    tabindex="0"
-    role="button"
     aria-label="Close modal">
     <div class="modal"
       (click)="$event.stopPropagation()"
@@ -66,5 +66,5 @@
         </div>
       </div>
     </div>
-  </div>
+  </button>
 }
