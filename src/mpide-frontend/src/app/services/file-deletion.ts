@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { IdeFile } from '../models/file.model';
 
 @Injectable({

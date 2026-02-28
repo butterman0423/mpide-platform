@@ -28,7 +28,7 @@ export class FileCardComponent {
 
   //Emit to parent if the user is trying to add a file at the same time. This just cancels the insertion for now
   //Or trying to delete a file
-  notifyParent(emitter: EventEmitter<any>, value: any): void {
+  notifyParent<T extends string | IdeFile>(emitter: EventEmitter<T>, value: T): void {
     emitter.emit(value);
   }
 
