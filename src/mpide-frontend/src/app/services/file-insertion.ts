@@ -10,9 +10,10 @@ export class FileInsertion {
     if (fileName === null || !fileName.trim()){
         throw Error("File must have a name.");
     }
+    fileName = fileName.trim()
 
     const fileVersion = this.fileExists(fileName, files);
-    const cppFile = fileVersion === 0 ? `${fileName.trim()}.cpp` : `${fileName.trim()}_${fileVersion}.cpp`;
+    const cppFile = fileVersion === 0 ? `${fileName}.cpp` : `${fileName}_${fileVersion}.cpp`;
 
     return {
         fileName: cppFile,

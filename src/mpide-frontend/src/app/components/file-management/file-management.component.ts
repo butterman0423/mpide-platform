@@ -59,7 +59,7 @@ export class FileManagementComponent{
 
   handleAddFile(): void {
     
-    const name = this.fileForm.get("newFile")?.value ?? "";
+    const name = this.fileForm.get("newFile")?.value?.toLowerCase() ?? "";
 
     try{
       const newFile: IdeFile = this.fileInsertionService.insertFile(name, this.fileList());
