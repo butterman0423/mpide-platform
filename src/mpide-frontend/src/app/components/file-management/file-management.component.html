@@ -12,7 +12,7 @@
         <app-file-card [file]="file" (fileSelected)="addFile ? resetAddFile() : null" (deleteFile)="deleteFile($event)"/>
       }
       @if (addFile) { 
-        <div class="ml-10 mr-4 bg-[#1E293B]">
+        <div class="ml-9 mr-4 bg-[#1E293B]">
             <form 
             class="flex flex-row justify-center gap-0"
             [formGroup]="fileForm" 

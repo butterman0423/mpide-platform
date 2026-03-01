@@ -6,14 +6,38 @@ import { IdeFile } from '../models/file.model';
 })
 export class FileInsertion {
     
-  insertFile(fileName: string, files: IdeFile[]): IdeFile {
-    if (fileName === null || !fileName.trim()){
-        throw Error("File must have a name.");
+  insertFile(newFile: string, files: IdeFile[]): IdeFile {
+    if (newFile === null || !newFile.trim()){
+      throw Error("File must have a name.");
     }
-    fileName = fileName.trim()
 
-    const fileVersion = this.fileExists(fileName, files);
-    const cppFile = fileVersion === 0 ? `${fileName}.cpp` : `${fileName}_${fileVersion}.cpp`;
+    newFile = newFile.trim();
+
+    const fileParts = this.extractFileInfo(newFile);
+
+    if (!fileParts.length){
+      throw Error("File isn't the right type.");
+    }
+
+    const [fileName, ext] = fileParts;
+
+    const allowedExtensions = ['.cpp', '.c', '.h'];
+    if(!allowedExtensions.includes(ext)){
+      throw Error("File isn't the right type.");
+    }
+
+    let fileVersion = 0;
+    const filePattern = new RegExp(`^${fileName}_\\d+${ext}$`);
+
+    files.forEach(f => {
+      console.log(f.fileName);
+      console.log(filePattern);
+      if(newFile === f.fileName || filePattern.test(f.fileName)){
+        fileVersion += 1;
+      }
+    })
+
+    const cppFile = fileVersion === 0 ? fileName : `${fileName}_${fileVersion}${ext}`;
 
     return {
         fileName: cppFile,
@@ -22,20 +46,16 @@ export class FileInsertion {
     };
   }
 
+  extractFileInfo(file: string): string[] {
+    const lastExtension = file.lastIndexOf(".");
 
-  fileExists(fileName: string, files: IdeFile[]): number {
-    let version = 0;
+    if (lastExtension === -1) {
+      return [];
+    }
 
-    files.forEach(f => {
-        //file_1.cpp => file_1 => file
-        const nameVersion = f.fileName.split(".")[0];
-        const name = nameVersion.slice(0, nameVersion.lastIndexOf("_"))
+    const fileName = file.slice(0, lastExtension);
+    const ext = file.slice(lastExtension, file.length);
 
-        //incase the use puts file_1 or file_5_3 as the fileName
-        if(fileName === name || fileName === nameVersion){
-          version += 1;
-        }
-    })
-    return version;
+    return [fileName, ext];
   }
 }
