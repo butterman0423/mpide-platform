@@ -1,1 +1,35 @@
-<p>console works!</p>
+<div class="h-full w-full">
+    <div class="bg-[#9CA3AF] text-[#FFFFFF] text-[14px] flex h-[36px] items-center px-2 gap-[5px]">
+        <div class="flex items-center">
+            <nz-icon nzType="code" nzTheme="outline"/>
+        </div>
+        <div>
+            <span>CONSOLE</span>
+        </div>
+    </div>
+
+    <div class="bg-[#000000] h-full w-full p-2 flex-col overflow-y-auto gap-y-[10px]">
+        @for (item of msgs(); track $index) {
+            <div>
+                @if (item.ty === "LOG") {
+                    @if (item.dat.ty === "SYSTEM") {
+                        <msg-system [msg]="item.dat.msg"></msg-system>
+                    } @else {
+                        <msg-server [msg]="item.dat.msg"></msg-server>
+                    }
+                }
+                @else if (item.ty === "ERROR") {
+                    <msg-error [header]="item.dat.header" [msgs]="item.dat.msgs"></msg-error>
+                }
+            </div>
+        }
+
+        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
+        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
+        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
+        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
+        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
+        
+        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
+    </div>
+</div>
