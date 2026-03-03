@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, ViewChild } from '@angular/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FileCardComponent } from '../file-card/file-card.component';
@@ -26,6 +26,7 @@ export class FileManagementComponent{
   private fileDeletionService = inject(FileDeletion);
   private eventService = inject(EventService);
   public fileStoreList = inject(FileStoreService);
+
 
   //The browser automatically focuses on the input field
   @ViewChild('fileInput') set inputRef(content: ElementRef) {

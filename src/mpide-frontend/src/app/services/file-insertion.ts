@@ -6,7 +6,7 @@ import { IdeFile } from '../models/file.model';
 })
 export class FileInsertion {
     
-  insertFile(newFile: string, files: IdeFile[]): IdeFile {
+  insertFile(newFile: string, currentFiles: IdeFile[]): IdeFile {
     if (newFile === null || !newFile.trim()){
       throw Error("File must have a name.");
     }
@@ -26,25 +26,50 @@ export class FileInsertion {
       throw Error("File isn't the right type.");
     }
 
-    let fileVersion = 0;
-    const filePattern = new RegExp(`^${fileName}_\\d+${ext}$`);
+    let fileVersion = this.getVersion(newFile, currentFiles);
+    
 
-    files.forEach(f => {
-      console.log(f.fileName);
-      console.log(filePattern);
-      if(newFile === f.fileName || filePattern.test(f.fileName)){
-        fileVersion += 1;
-      }
-    })
-
-    const cppFile = fileVersion === 0 ? fileName : `${fileName}_${fileVersion}${ext}`;
+    const createdFile = fileVersion === 0 ? newFile : `${fileName}_${fileVersion}${ext}`;
 
     return {
-        fileName: cppFile,
-        fileLink: `/app/user123/${cppFile}`,
+        fileName: createdFile,
+        fileLink: `/app/user123/${createdFile}`,
         fileContent: ""
     };
   }
+
+  getVersion(newFile: string, currentFiles: IdeFile[]): number {
+    const fileParts = this.extractFileInfo(newFile);
+    const [fileName, ext] = fileParts;
+
+    let version = 0;
+    const filePattern = new RegExp(`^${fileName}_(\\d+)${ext}$`);
+
+    for (const f of currentFiles){
+      if(newFile === f.fileName){
+        version += 1;
+      }
+      else if(filePattern.test(f.fileName)){
+        const fileMatch = f.fileName.match(filePattern);
+        console.log(fileMatch);
+        if(fileMatch !== null){
+          const v = parseInt(fileMatch[1]);
+
+          if (version === (v-1)){
+            break;
+          }
+
+          version += 1;
+          
+        }
+      }
+    }
+
+
+    return version;
+  }
+
+
 
   extractFileInfo(file: string): string[] {
     const lastExtension = file.lastIndexOf(".");
