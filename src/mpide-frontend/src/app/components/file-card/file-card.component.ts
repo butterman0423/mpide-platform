@@ -40,6 +40,7 @@ export class FileCardComponent {
 
   handleEditStatus(){
     this.isBeingEdited.set(true);
+    this.notifyParent(this.fileSelected, "true");
     
   }
   handleEditFileName(oldfile: IdeFile, newFileName: string) {
