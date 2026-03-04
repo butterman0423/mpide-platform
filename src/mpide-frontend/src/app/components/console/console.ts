@@ -34,7 +34,7 @@ export class Console {
 }
 
 @Component({
-  selector: "msg-server",
+  selector: "app-msg-server",
   imports: [],
   templateUrl: "./messages/msg-server.html",
   styleUrl: "./console.css"
@@ -45,8 +45,8 @@ export class ServerMessage {
 }
 
 @Component({
-  selector: "msg-system",
-  imports: [],
+  selector: "app-msg-system",
+  imports: [forwardRef(() => DollarLine)],
   templateUrl: "./messages/msg-sys.html",
   styleUrl: "./console.css"
 })
@@ -55,7 +55,7 @@ export class SystemMessage {
 }
 
 @Component({
-  selector: "msg-error",
+  selector: "app-msg-error",
   imports: [forwardRef(() => DollarLine)],
   templateUrl: "./messages/msg-error.html",
   styleUrl: "./console.css"
@@ -66,7 +66,7 @@ export class ErrorMessage {
 }
 
 @Component({
-  selector: "dollar-line",
+  selector: "app-dollar-line",
   imports: [],
   templateUrl: "./dollar-line.html",
   styleUrl: "./console.css"

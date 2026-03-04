@@ -13,23 +13,15 @@
             <div>
                 @if (item.ty === "LOG") {
                     @if (item.dat.ty === "SYSTEM") {
-                        <msg-system [msg]="item.dat.msg"></msg-system>
+                        <app-msg-system [msg]="item.dat.msg"></app-msg-system>
                     } @else {
-                        <msg-server [msg]="item.dat.msg"></msg-server>
+                        <app-msg-server [msg]="item.dat.msg"></app-msg-server>
                     }
                 }
                 @else if (item.ty === "ERROR") {
-                    <msg-error [header]="item.dat.header" [msgs]="item.dat.msgs"></msg-error>
+                    <app-msg-error [header]="item.dat.header" [msgs]="item.dat.msgs"></app-msg-error>
                 }
             </div>
         }
-
-        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
-        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
-        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
-        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
-        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
-        
-        <msg-error [header]="'TEST'" [msgs]="['test', 'test', 'test']"></msg-error>
     </div>
 </div>
