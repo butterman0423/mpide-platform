@@ -26,7 +26,7 @@ export class FileInsertion {
       throw Error("File isn't the right type.");
     }
 
-    let fileVersion = this.getVersion(newFile, currentFiles);
+    const fileVersion = this.getVersion(newFile, currentFiles);
     
 
     const createdFile = fileVersion === 0 ? newFile : `${fileName}_${fileVersion}${ext}`;
