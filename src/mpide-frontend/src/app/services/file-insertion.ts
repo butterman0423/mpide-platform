@@ -39,33 +39,26 @@ export class FileInsertion {
   }
 
   getVersion(newFile: string, currentFiles: IdeFile[]): number {
-    const fileParts = this.extractFileInfo(newFile);
-    const [fileName, ext] = fileParts;
-
-    let version = 0;
-    const filePattern = new RegExp(`^${fileName}_(\\d+)${ext}$`);
-
-    for (const f of currentFiles){
-      if(newFile === f.fileName){
-        version += 1;
-      }
-      else if(filePattern.test(f.fileName)){
-        const fileMatch = f.fileName.match(filePattern);
-        console.log(fileMatch);
-        if(fileMatch !== null){
-          const v = parseInt(fileMatch[1]);
-
-          if (version === (v-1)){
-            break;
-          }
-
-          version += 1;
-          
+    const [fileName, ext] = this.extractFileInfo(newFile);
+    const used = new Set<number>();
+    const basePattern = new RegExp(`^${fileName}${ext}$`);
+    const numberedPattern = new RegExp(`^${fileName}_(\\d+)${ext}$`);
+  
+    for (const f of currentFiles) {
+      if (basePattern.test(f.fileName)) {
+        used.add(0);
+      } else {
+        const fileMatch = f.fileName.match(numberedPattern);
+        if (fileMatch) {
+          used.add(parseInt(fileMatch[1], 10));
         }
       }
     }
-
-
+  
+    let version = 0;
+    while (used.has(version)) {
+      version++;
+    }
     return version;
   }
 
