@@ -1,5 +1,5 @@
 import { IconDefinition } from '@ant-design/icons-angular';
-import { DeleteFill, DiffOutline, EditFill, PlusOutline, FileAddOutline, CheckOutline, CloseOutline, ExclamationCircleFill } from '@ant-design/icons-angular/icons';
+import { DeleteFill, DiffOutline, EditFill, PlusOutline, FileAddOutline, CheckOutline, CloseOutline, CodeOutline, ExclamationCircleFill } from '@ant-design/icons-angular/icons';
 
 export const icons: IconDefinition[] = [
     PlusOutline,
@@ -9,5 +9,6 @@ export const icons: IconDefinition[] = [
     FileAddOutline,
     CheckOutline,
     CloseOutline,
+    CodeOutline,
     ExclamationCircleFill
 ]

@@ -1,0 +1,16 @@
+<div class="text-[#F87171] text-[14px]">
+    <div class="border-y-2 my-2">
+        <div class="border-b-2 mt-2 pb-2">
+            <b>ERROR: </b>
+            <span>{{header().toUpperCase()}}</span>
+        </div>
+        <div class="my-2">
+            @for (msg of msgs(); track $index) {
+                <div>{{msg}}</div>
+            }
+        </div>
+    </div>
+    
+    <app-dollar-line [msg]="`${msgs().length} errors generated.`"></app-dollar-line>
+    <app-dollar-line [msg]="`${header()}.`"></app-dollar-line>
+</div>
