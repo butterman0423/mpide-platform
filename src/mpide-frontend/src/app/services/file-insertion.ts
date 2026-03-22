@@ -6,36 +6,74 @@ import { IdeFile } from '../models/file.model';
 })
 export class FileInsertion {
     
-  insertFile(fileName: string, files: IdeFile[]): IdeFile {
-    if (fileName === null || !fileName.trim()){
-        throw Error("File must have a name.");
+  insertFile(newFile: string, currentFiles: IdeFile[]): IdeFile {
+    if (newFile === null || !newFile.trim()){
+      throw Error("File must have a name.");
     }
-    fileName = fileName.trim()
 
-    const fileVersion = this.fileExists(fileName, files);
-    const cppFile = fileVersion === 0 ? `${fileName}.cpp` : `${fileName}_${fileVersion}.cpp`;
+    newFile = newFile.trim();
+
+    const fileParts = this.extractFileInfo(newFile);
+
+    if (!fileParts.length){
+      throw Error("File isn't the right type.");
+    }
+
+    const [fileName, ext] = fileParts;
+
+    const allowedExtensions = ['.cpp', '.c', '.h'];
+    if(!allowedExtensions.includes(ext)){
+      throw Error("File isn't the right type.");
+    }
+
+    const fileVersion = this.getVersion(newFile, currentFiles);
+    
+
+    const createdFile = fileVersion === 0 ? newFile : `${fileName}_${fileVersion}${ext}`;
 
     return {
-        fileName: cppFile,
-        fileLink: `/app/user123/${cppFile}`,
+        fileName: createdFile,
+        fileLink: `/app/user123/${createdFile}`,
         fileContent: ""
     };
   }
 
-
-  fileExists(fileName: string, files: IdeFile[]): number {
-    let version = 0;
-
-    files.forEach(f => {
-        //file_1.cpp => file_1 => file
-        const nameVersion = f.fileName.split(".")[0];
-        const name = nameVersion.slice(0, nameVersion.lastIndexOf("_"))
-
-        //incase the use puts file_1 or file_5_3 as the fileName
-        if(fileName === name || fileName === nameVersion){
-          version += 1;
+  getVersion(newFile: string, currentFiles: IdeFile[]): number {
+    const [fileName, ext] = this.extractFileInfo(newFile);
+    const used = new Set<number>();
+    const basePattern = new RegExp(`^${fileName}${ext}$`);
+    const numberedPattern = new RegExp(`^${fileName}_(\\d+)${ext}$`);
+  
+    for (const f of currentFiles) {
+      if (basePattern.test(f.fileName)) {
+        used.add(0);
+      } else {
+        const fileMatch = f.fileName.match(numberedPattern);
+        if (fileMatch) {
+          used.add(parseInt(fileMatch[1], 10));
         }
-    })
+      }
+    }
+  
+    let version = 0;
+    while (used.has(version)) {
+      version++;
+    }
     return version;
+  }
+
+
+
+  extractFileInfo(file: string): string[] {
+    const lastExtension = file.lastIndexOf(".");
+
+    if (lastExtension === -1) {
+      return [];
+    }
+
+    const fileName = file.slice(0, lastExtension);
+    const ext = file.slice(lastExtension, file.length);
+
+    return [fileName, ext];
   }
 }

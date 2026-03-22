@@ -27,6 +27,7 @@ export class FileManagementComponent{
   private eventService = inject(EventService);
   public fileStoreList = inject(FileStoreService);
 
+
   //The browser automatically focuses on the input field
   @ViewChild('fileInput') set inputRef(content: ElementRef) {
     if (content) {
