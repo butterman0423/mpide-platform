@@ -16,7 +16,7 @@ jobs:
           node-version: 22.12.0
 
       - name: Codestyle Check on Frontend
-        working-directory: ./src/mpide-frontend
+        working-directory: ./src/frontend
         run: |
           npm install
           npm run ng -- lint
