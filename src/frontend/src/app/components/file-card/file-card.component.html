@@ -9,13 +9,15 @@
   (click)="handleSelect(file())"
   (keydown.enter)="handleSelect(file())"
   (keydown.space)="handleSelect(file())"
+  tabindex="0"
+  role="button"
   >
     
     <nz-icon nzType="diff" nzTheme="outline" class="flex-shrink-0" /> 
     @if(isBeingEdited()) {
       <input 
         type="text"
-        class="m-0 flex-1 w-full max-w-full border-0 bg-transparent px-1 text-white shadow-[inset_0_0_0_1px_rgb(156,163,175)] box-border "
+        class="m-0 flex-1 w-full max-w-full border-0 bg-transparent px-1 text-white shadow-[inset_0_0_0_1px_rgb(156,163,175)] box-border"
         [(ngModel)]="newFileName"
         (keyup.enter) = "handleEditFileName(file(), newFileName)"
       />
