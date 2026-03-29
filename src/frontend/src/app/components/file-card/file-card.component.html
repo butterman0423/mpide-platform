@@ -1,30 +1,30 @@
 <div class="flex flex-row mx-4 items-stretch justify-center gap-0 ">
   <div 
-  class="flex flex-row items-center gap-2 cursor-pointer flex-1 hover:bg-[#54667a]" 
+  class="flex flex-row items-center gap-2 flex-1 hover:bg-[#54667a]"
     [ngClass]="{
-    'bg-[#54667a]': fileSelectionService.selectedFile()?.fileName === file().fileName
+    'bg-[#54667a]': fileSelectionService.selectedFile()?.fileName === file().fileName,
+    'cursor-pointer': !isBeingEdited(),
+    'cursor-default': isBeingEdited()
   }"
   (click)="handleSelect(file())"
   (keydown.enter)="handleSelect(file())"
   (keydown.space)="handleSelect(file())"
-  tabindex="0"
-  
-  role="button"
   >
     
-    <nz-icon nzType="diff" nzTheme="outline" /> 
+    <nz-icon nzType="diff" nzTheme="outline" class="flex-shrink-0" /> 
     @if(isBeingEdited()) {
       <input 
-        class="m-0 bg-transparent border border-gray-400 text-white px-1"
+        type="text"
+        class="m-0 flex-1 w-full max-w-full border-0 bg-transparent px-1 text-white shadow-[inset_0_0_0_1px_rgb(156,163,175)] box-border "
         [(ngModel)]="newFileName"
         (keyup.enter) = "handleEditFileName(file(), newFileName)"
       />
     }
     @else {
-      <p class="m-0">{{ file().fileName }}</p>
+      <p class="m-0 min-w-0 flex-1 truncate">{{ file().fileName }}</p>
     }
   </div>
-  <div class="flex flex-row items-stretch gap-0">
+  <div class="flex flex-row items-stretch gap-0 flex-shrink-0">
     <!-- Lowk don't know why event.stopPropagation helps the emitter-->
     @if(isBeingEdited()){
       <button type="submit" class="card-buttons bg-[#1890FF] hover:bg-[#60A5FA]" (click) = "handleEditFileName(file(), newFileName)">
@@ -36,7 +36,7 @@
       </button>
     }
     @else{
-    <button (click)="handleEditStatus(); $event.stopPropagation()" class="card-buttons">
+    <button (click)="handleEdit(); $event.stopPropagation()" class="card-buttons">
       <nz-icon nzType="edit" nzTheme="fill" />
     </button>
     <button (click)="openModal(); $event.stopPropagation()" class="card-buttons">
