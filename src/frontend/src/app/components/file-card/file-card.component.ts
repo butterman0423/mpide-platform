@@ -1,4 +1,4 @@
-import { Component, input, inject, Output, EventEmitter, signal } from '@angular/core';
+import { Component, input, inject, Output, EventEmitter, signal, computed, effect } from '@angular/core';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { IdeFile } from '../../models/file.model';
 import { FileSelection } from '../../services/file-selection';
@@ -15,34 +15,59 @@ import { FileStoreService } from '../../services/file-store';
 })
 export class FileCardComponent {
   file = input.required<IdeFile>();
+  editFileKey = input<string | null>(null);
   showModal = signal<boolean>(false);
   public fileSelectionService = inject(FileSelection);
-  isBeingEdited = signal<boolean>(false);
+
+  isBeingEdited = computed(
+    () => this.editFileKey() !== null && this.editFileKey() === this.file().fileName
+  );
+
   newFileName = '';
 
   public fileStoreList = inject(FileStoreService);
 
-
-  @Output() fileSelected = new EventEmitter<string>();
+  @Output() fileSelected = new EventEmitter<IdeFile>();
+  @Output() editFile = new EventEmitter<IdeFile>();
+  @Output() cancelEdit = new EventEmitter<null>();
   @Output() deleteFile = new EventEmitter<IdeFile>();
+
+
+  constructor() {
+    effect(() => {
+      const f = this.file();
+      if (this.editFileKey() !== null && this.editFileKey() === f.fileName) {
+        this.newFileName = f.fileName;
+      }
+    });
+  }
+
+
+
 
   //Emit to parent if the user is trying to add a file at the same time. This just cancels the insertion for now
   //Or trying to delete a file
-  notifyParent<T extends string | IdeFile>(emitter: EventEmitter<T>, value: T): void {
+  notifyParent<T extends IdeFile | null>(emitter: EventEmitter<T>, value: T): void {
     emitter.emit(value);
   }
 
-  handleSelect(file: IdeFile){
-    // alert(file.fileName)
+  handleSelect(file: IdeFile) {
+    if (this.isBeingEdited()) {
+      return;
+    }
+    
     this.fileSelectionService.selectFile(file);
-    this.notifyParent(this.fileSelected, "true");
+    this.notifyParent(this.fileSelected, file);
   }
 
-  handleEditStatus(){
-    this.isBeingEdited.set(true);
-    this.notifyParent(this.fileSelected, "true");
-    
+  handleEdit(): void {
+    this.notifyParent(this.editFile, this.file());
   }
+
+  handleEditCancel(): void {
+    this.notifyParent(this.cancelEdit, null);
+  }
+
   handleEditFileName(oldfile: IdeFile, newFileName: string) {
 
     const trimmedName = newFileName.trim();
@@ -85,22 +110,19 @@ export class FileCardComponent {
     if (newSelectedFile){
       this.fileSelectionService.selectFile(newSelectedFile);
     }
-    this.isBeingEdited.set(false);
+    this.handleEditCancel();
   }
 
-  handleEditCancel(){
-    this.isBeingEdited.set(false);
-  }
-
-  openModal(){
+  openModal() {
+    this.handleEditCancel();
     this.showModal.set(true);
   }
 
-  closeModal(){
+  closeModal() {
     this.showModal.set(false);
   }
 
-  handleDelete(file: IdeFile){
+  handleDelete(file: IdeFile) {
     this.notifyParent(this.deleteFile, file);
     this.closeModal();
   }
