@@ -5,7 +5,7 @@ on:
       - 'dev'
       - 'stable'
 jobs:
-  frontend-check:
+  frontend-linter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -20,3 +20,25 @@ jobs:
         run: |
           npm install
           npm run ng -- lint
+
+  backend-linter:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: [./src/backend, ./src/services/compiler]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.22.2'
+          cache: false
+      
+      - name: Codestyle Check on Backend
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: ${{ matrix.dir }}
+
+
