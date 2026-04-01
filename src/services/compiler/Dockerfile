@@ -1,9 +1,12 @@
 FROM ubuntu:22.04
 
+ARG USER_GID
+ARG GRP_PERMS
+ARG GO_VERSION
+ARG FS_PATH
+
 ARG USERNAME=ubuntu
 ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-ARG GO_VERSION=1.22
 ARG CWD=/home/${USERNAME}/app
 
 RUN groupadd --gid $USER_GID $USERNAME \
@@ -15,10 +18,16 @@ RUN apt-get update && \
 
 ENV PATH=$PATH:/usr/lib/go-${GO_VERSION}/bin
 
+RUN mkdir -p ${FS_PATH}
+RUN chmod ${GRP_PERMS} ${FS_PATH}
+RUN chgrp ${USER_GID} ${FS_PATH}
 USER $USERNAME
 
 WORKDIR ${CWD}
 COPY . ${CWD}
+
+# Expose Important ENV fields for Program
+ENV FILES_PATH=${FS_PATH}
 
 EXPOSE 3001
 ENTRYPOINT [ "go", "run", "." ]
