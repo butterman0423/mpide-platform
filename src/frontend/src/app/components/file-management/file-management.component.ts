@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FileCardComponent } from '../file-card/file-card.component';
@@ -27,6 +27,7 @@ export class FileManagementComponent{
   private eventService = inject(EventService);
   public fileStoreList = inject(FileStoreService);
 
+  readonly editFile = signal<string | null>(null);
 
   //The browser automatically focuses on the input field
   @ViewChild('fileInput') set inputRef(content: ElementRef) {
@@ -40,6 +41,7 @@ export class FileManagementComponent{
   })
 
   handleClick(): void {
+    this.editFile.set(null);
     this.addFile = true;
   }
 
@@ -75,6 +77,24 @@ export class FileManagementComponent{
     this.fileError = false;
     this.addFile = false;
     this.fileForm.reset();
+  }
+
+  handleEditFile(file: IdeFile): void {
+    this.editFile.set(file.fileName);
+  }
+
+  resetEditFile(): void {
+    this.editFile.set(null);
+  }
+
+
+  onFileSelected(selected: IdeFile): void {
+    if (this.editFile() !== null && selected.fileName !== this.editFile()) {
+      this.resetEditFile();
+    }
+    if (this.addFile) {
+      this.resetAddFile();
+    }
   }
 
   deleteFile(file: IdeFile): void {
