@@ -17,20 +17,28 @@ Only the Node.js and Docker dependencies need to be installed locally to run the
 
 # Quick Start
 
+Ensure that Docker is running on your system before starting.
+
 Clone the repository.
-```
+```bash
 git clone https://github.com/butterman0423/mpide-platform.git
 cd /path/to/mpide-platform
 ```
 
-Spin up the services.
-```
-cd /path/to/mpide-platform
-docker compose up
+Copy the environment.
+```bash
+cp .env.sample .env
+# Update values in .env to further configure the app.
 ```
 
-In a seperate terminal instance, start the frontend server.
+Spin up the services.
+```bash
+cd /path/to/mpide-platform
+docker compose up -d
 ```
+
+Then, start the frontend server.
+```bash
 cd /path/to/mpide-platform
 cd src/mpide-frontend
 npm install
@@ -40,7 +48,7 @@ npm run start
 The application is now running on `localhost`!
 
 To shut down the services when finished:
-```
+```bash
 cd /path/to/mpide-platform
 docker compose down
 ```

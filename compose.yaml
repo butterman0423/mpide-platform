@@ -1,4 +1,25 @@
 services:
-  compiler:
-    build: ./src/compiler
+  backend:
+    build: 
+      context: ./src/backend
+      args:
+        GO_VERSION: $GO_VERSION
+        USER_GID: $GID_FILES
+        GRP_PERMS: $GID_PERM_FILES
+        FS_PATH: $SV_PATH_FILES
+    volumes:
+      - file-store:$SV_PATH_FILES
+    
+  compiler-ms:
+    build: 
+      context: ./src/services/compiler
+      args:
+        GO_VERSION: $GO_VERSION
+        USER_GID: $GID_FILES
+        GRP_PERMS: $GID_PERM_FILES
+        FS_PATH: $SV_PATH_FILES
+    volumes:
+      - file-store:$SV_PATH_FILES
 
+volumes:
+  file-store:
