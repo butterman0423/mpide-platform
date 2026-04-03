@@ -7,6 +7,8 @@ services:
         USER_GID: $GID_FILES
         GRP_PERMS: $GID_PERM_FILES
         FS_PATH: $SV_PATH_FILES
+    ports:
+      - $BACKEND_HOST:3000
     volumes:
       - file-store:$SV_PATH_FILES
     
@@ -18,6 +20,8 @@ services:
         USER_GID: $GID_FILES
         GRP_PERMS: $GID_PERM_FILES
         FS_PATH: $SV_PATH_FILES
+    ports:
+      - $COMPILER_HOST:3001
     volumes:
       - file-store:$SV_PATH_FILES
 

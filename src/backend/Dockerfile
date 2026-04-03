@@ -1,8 +1,28 @@
+
+ARG GO_VERSION
+# Stage 1: Build
+FROM golang:${GO_VERSION}-alpine AS builder
+
+ARG USERNAME=ubuntu
+ARG CWD=/home/${USERNAME}/app
+WORKDIR ${CWD}
+
+COPY go.mod ./
+RUN go mod download
+
+COPY . .
+
+RUN go build -ldflags="-s -w" -o server .
+
+
+# Stage 2: Runtime
 FROM ubuntu:22.04
+
+WORKDIR ${CWD}
 
 ARG USER_GID
 ARG GRP_PERMS
-ARG GO_VERSION
+
 ARG FS_PATH
 
 ARG USERNAME=ubuntu
@@ -12,23 +32,21 @@ ARG CWD=/home/${USERNAME}/app
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
+
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \ 
-    apt-get install -y golang-${GO_VERSION}
-
 ENV PATH=$PATH:/usr/lib/go-${GO_VERSION}/bin
-
-RUN mkdir -p ${FS_PATH}
-RUN chmod ${GRP_PERMS} ${FS_PATH}
-RUN chgrp ${USER_GID} ${FS_PATH}
-
-USER $USERNAME
-
-WORKDIR ${CWD}
-COPY . ${CWD}
 
 # Expose Important ENV fields for Program
 ENV FILES_PATH=${FS_PATH}
 
+
+RUN mkdir -p ${FS_PATH} \
+    && chmod ${GRP_PERMS} ${FS_PATH} \
+    && chgrp ${USER_GID} ${FS_PATH}
+
+USER $USERNAME
+
+COPY --from=builder --chown=${USER_UID}:${USER_GID} ${CWD}/server ./server
+
 EXPOSE 3000
-ENTRYPOINT [ "go", "run", "." ]
+ENTRYPOINT [ "./server" ]
