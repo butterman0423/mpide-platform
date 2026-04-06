@@ -7,7 +7,7 @@ ARG USERNAME=ubuntu
 ARG CWD=/home/${USERNAME}/app
 WORKDIR ${CWD}
 
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
@@ -18,17 +18,15 @@ RUN go build -ldflags="-s -w" -o server .
 # Stage 2: Runtime
 FROM ubuntu:22.04
 
-WORKDIR ${CWD}
-
+ARG GO_VERSION
 ARG USER_GID
 ARG GRP_PERMS
-
 ARG FS_PATH
-
 ARG USERNAME=ubuntu
 ARG USER_UID=1000
 ARG CWD=/home/${USERNAME}/app
 
+WORKDIR ${CWD}
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
