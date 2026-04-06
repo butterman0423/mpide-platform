@@ -46,7 +46,10 @@ func requestCompiler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 	w.WriteHeader(resp.StatusCode)
-	w.Write(body)
+
+	if _, err := w.Write(body); err != nil {
+		http.Error(w, "Failed to make reponse body", http.StatusInternalServerError)
+	}
 }
 
 func handleRequests() *http.ServeMux {
