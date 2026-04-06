@@ -78,6 +78,7 @@ func hasFreePort() bool {
 	return true
 }
 
+// Remember that this is a sanity check.
 func getResources(w http.ResponseWriter, r *http.Request) {
 	// Make sure its a GET request
 	if r.Method != http.MethodGet {
