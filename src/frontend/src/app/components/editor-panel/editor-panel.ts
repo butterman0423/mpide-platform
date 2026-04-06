@@ -7,6 +7,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { BoardSelectorComponent } from '../board-selector/board-selector';
 import { Subscription } from 'rxjs';
 import { EventService } from '../../services/event-service';
+import { FileCompilerService } from '../../services/file-compiler';
 
 @Component({
   selector: 'app-editor-panel',
@@ -21,6 +22,7 @@ export class EditorPanel implements OnInit, OnDestroy {
   editorOptions = {theme: 'vs-dark', language: 'javascript'};
   code: string | undefined;
   public fileSelectionService = inject(FileSelection);
+  public fileCompilerService = inject(FileCompilerService);
   private eventService = inject(EventService);
 
 
@@ -48,6 +50,8 @@ export class EditorPanel implements OnInit, OnDestroy {
     this.fileSelectionService.clearFile();
     this.code = '';
   }
-  
 
+  handleCompilerRequest(){
+    this.fileCompilerService.requestCompiler();
+  }
 }
