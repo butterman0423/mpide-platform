@@ -18,17 +18,15 @@ RUN go build -ldflags="-s -w" -o compiler .
 # Stage 2: Runtime
 FROM ubuntu:22.04
 
-WORKDIR ${CWD}
-
+ARG GO_VERSION
 ARG USER_GID
 ARG GRP_PERMS
-
 ARG FS_PATH
-
 ARG USERNAME=ubuntu
 ARG USER_UID=1000
 ARG CWD=/home/${USERNAME}/app
 
+WORKDIR ${CWD}
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
@@ -49,4 +47,4 @@ USER $USERNAME
 COPY --from=builder --chown=${USER_UID}:${USER_GID} ${CWD}/compiler ./compiler
 
 EXPOSE 3001
-ENTRYPOINT [ "./server" ]
+ENTRYPOINT [ "./compiler" ]

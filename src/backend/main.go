@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/rs/cors"
 )
 
 func getEnv(key, fallback string) string {
@@ -22,20 +24,23 @@ func requestCompiler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := http.Get("localhost:3001/v1/request")
+	numFiles := r.URL.Query().Get("n")
+	ttlBytes := r.URL.Query().Get("b")
+
+	requestQuery := fmt.Sprintf("http://compiler-ms:3001/v1/request?n=%s&b=%s", numFiles, ttlBytes)
+	resp, err := http.Get(requestQuery)
 
 	if err != nil {
-		log.Printf("Request failure: %v", err)
-		http.Error(w, "Failed to request compiler", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to request compiler: %v", err), http.StatusInternalServerError)
 		return
 	}
+
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Printf("Failed to read response body: %v", err)
-		http.Error(w, "Failed to read data from compiler", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to read data from compiler: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -56,6 +61,15 @@ func main() {
 
 	mux := handleRequests()
 
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:4200"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(mux)
+
 	fmt.Printf("Listening on port %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
