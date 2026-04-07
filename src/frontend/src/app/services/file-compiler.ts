@@ -1,6 +1,6 @@
 import { inject, Injectable} from '@angular/core';
 import { IdeFile } from '../models/file.model';
-import { HttpClient, HttpHeaders, HttpParams, HttpStatusCode } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpStatusCode } from '@angular/common/http';
 import { environment } from '../../environments/environment.development';
 import { FileStoreService } from './file-store';
 
