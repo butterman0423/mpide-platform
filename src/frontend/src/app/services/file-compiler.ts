@@ -1,6 +1,6 @@
 import { inject, Injectable} from '@angular/core';
 import { IdeFile } from '../models/file.model';
-import { HttpClient, HttpParams, HttpStatusCode } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpStatusCode } from '@angular/common/http';
 import { environment } from '../../environments/environment.development';
 import { FileStoreService } from './file-store';
 
@@ -21,13 +21,16 @@ export class FileCompilerService {
     const numFiles: number = fileList.length;
     const ttlBytes: number = this.getBytes(fileList);
 
-    const params = new HttpParams().set("n", numFiles).set("b", ttlBytes);
+    const body = {
+      num_files : numFiles,
+      total_bytes : ttlBytes
+    };
   
-    const url = `${environment.backendUrl}/compiler/request`;
-    this.http.get<requestCompilerResp | null>(url, {
-      params: params,
-      observe: "response"
-    }).subscribe({
+    const url = `${environment.backendUrl}compiler/request`;
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    // GET doesn't support a request body, so have to use POST
+    this.http.post<requestCompilerResp>(url, body, {observe: "response", headers: headers}).subscribe({
         next: (data) => {
             alert(JSON.stringify(data))
         },
