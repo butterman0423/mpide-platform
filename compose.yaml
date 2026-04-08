@@ -7,6 +7,8 @@ services:
         USER_GID: $GID_FILES
         GRP_PERMS: $GID_PERM_FILES
         FS_PATH: $SV_PATH_FILES
+    environment:
+      - COMPILER_URL=$COMPILER_URL
     ports:
       - $BACKEND_HOST:3000
     volumes:

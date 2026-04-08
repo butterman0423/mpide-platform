@@ -1,17 +1,13 @@
 package routes
 
 import (
-	"encoding/json"
+	"backend/utilites"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 )
-
-type ReqCompiler struct {
-	NumFiles   int `json:"num_files"`
-	TotalBytes int `json:"total_bytes"`
-}
 
 func RequestCompiler(w http.ResponseWriter, r *http.Request) {
 	// Make sure its a POST request
@@ -20,19 +16,21 @@ func RequestCompiler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var rc ReqCompiler
-
-	err := json.NewDecoder(r.Body).Decode(&rc)
+	payload, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	numFiles := rc.NumFiles
-	ttlBytes := rc.TotalBytes
+	CompilerUrl := utilites.GetEnv("COMPILER_URL", "")
+	if CompilerUrl == "" {
+		log.Print("Missing COMPILER_URL environment variable")
+		http.Error(w, "Interval server error. Please try again", http.StatusInternalServerError)
+		return
+	}
 
-	requestQuery := fmt.Sprintf("http://compiler-ms:3001/v1/request?n=%d&b=%d", numFiles, ttlBytes)
-	resp, err := http.Get(requestQuery)
+	requestQuery := fmt.Sprintf("%s/v1/request", CompilerUrl)
+	resp, err := http.Post(requestQuery, "application/json", bytes.NewBuffer(payload))
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to request compiler: %v", err), http.StatusInternalServerError)

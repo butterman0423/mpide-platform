@@ -9,11 +9,15 @@ import (
 	"net/http"
 	"os"
 	"runtime"
-	"strconv"
 	"syscall"
 
 	"github.com/google/uuid"
 )
+
+type ReqCompiler struct {
+	NumFiles   int `json:"num_files"`
+	TotalBytes int `json:"total_bytes"`
+}
 
 // Checking resources functions
 func hasEnoughProcesses() bool {
@@ -82,29 +86,28 @@ func hasFreePort() bool {
 // Remember that this is a sanity check.
 func GetResources(w http.ResponseWriter, r *http.Request) {
 	// Make sure its a GET request
-	if r.Method != http.MethodGet {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	numFiles, err := strconv.Atoi(r.URL.Query().Get("n"))
+	var rc ReqCompiler
 
+	err := json.NewDecoder(r.Body).Decode(&rc)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to read the number of files: %v", err), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if numFiles <= 0 {
+
+	NumFiles := rc.NumFiles
+	TtlBytes := rc.TotalBytes
+
+	if NumFiles <= 0 {
 		http.Error(w, "The number of files needs to be greater than 0", http.StatusBadRequest)
 		return
 	}
 
-	ttlBytes, err := strconv.ParseUint(r.URL.Query().Get("b"), 10, 64)
-
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to read the bytes: %v", err), http.StatusInternalServerError)
-		return
-	}
-	if ttlBytes <= 0 {
+	if TtlBytes <= 0 {
 		http.Error(w, "The total amount of bytes needs to be greater than 0", http.StatusBadRequest)
 		return
 	}
@@ -116,7 +119,7 @@ func GetResources(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !hasEnoughProcesses() || !hasEnoughSpace(filePath, ttlBytes) || !hasFreePort() {
+	if !hasEnoughProcesses() || !hasEnoughSpace(filePath, uint64(TtlBytes)) || !hasFreePort() {
 		w.WriteHeader(http.StatusInsufficientStorage)
 		return
 	}
