@@ -1,19 +1,23 @@
 <div>
-<button [matMenuTriggerFor]="projectMenu" 
-        class=" text-xs px-3 py-1 bg-[#1890FF] text-white rounded hover:bg-[#475569] flex flex-row items-center justify-center gap-1 hover:cursor-pointer">
+  <a nz-dropdown nzTrigger="click" [nzDropdownMenu]="projectMenu"   
+  class=" text-xs px-3 py-1 bg-[#1890FF] text-white rounded hover:bg-[#475569] flex flex-row items-center justify-center gap-1 hover:cursor-pointer">
     Project
     <nz-icon nzType="caret-down" nzTheme="outline" />
-  </button>
-  
-  <mat-menu #projectMenu="matMenu">
-    @for (option of options; track option.label ) {
-        
-        <button mat-menu-item (click)="option.action()">
-            <div class="flex flex-row items-center space-between gap-1">
-                <nz-icon [nzType]="option.icon" nzTheme="outline" />
-                {{ option.label }}
-            </div>
-        </button>
+  </a>
+  <nz-dropdown-menu #projectMenu="nzDropdownMenu">
+    <ul nz-menu class="bg-white w-[150%]">
+      @for (option of options; track option.label ) {
+        <li nz-menu-item 
+        (click)="option.action()" 
+        (keydown.enter)="option.action()"
+        tabindex="0"
+        class="hover:cursor-pointer hover:bg-[#d0d0d0]">
+          <div class="flex flex-row items-center space-between gap-1 pl-2 pr-0 py-1">
+            <nz-icon [nzType]="option.icon" nzTheme="outline" />
+            {{ option.label }}
+          </div>
+        </li>
     }
-  </mat-menu>
+    </ul>
+  </nz-dropdown-menu>
 </div>

@@ -1,11 +1,10 @@
 import { Component } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatMenuModule } from "@angular/material/menu";
 import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 
 @Component({
     selector: 'app-project-menu',
-    imports: [NzIconModule, MatMenuModule, MatButtonModule],
+    imports: [NzIconModule, NzDropdownModule],
     templateUrl: './project-menu.html',
     styleUrl: './project-menu.css'
   })
