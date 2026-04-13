@@ -8,6 +8,7 @@ import { BoardSelectorComponent } from '../board-selector/board-selector';
 import { Subscription } from 'rxjs';
 import { EventService } from '../../services/event-service';
 import { FileCompilerService } from '../../services/file-compiler';
+import { FileStoreService } from '../../services/file-store';
 
 @Component({
   selector: 'app-editor-panel',
@@ -24,6 +25,7 @@ export class EditorPanel implements OnInit, OnDestroy {
   public fileSelectionService = inject(FileSelection);
   public fileCompilerService = inject(FileCompilerService);
   private eventService = inject(EventService);
+  public fileStoreService = inject(FileStoreService);
 
 
   ngOnInit(): void {
@@ -49,6 +51,13 @@ export class EditorPanel implements OnInit, OnDestroy {
   handleDelete(){
     this.fileSelectionService.clearFile();
     this.code = '';
+  }
+
+  onCodeChange(newCode: string) {
+    const activeFile = this.fileSelectionService.selectedFile();
+    if (activeFile && newCode !== undefined) {
+      this.fileStoreService.updateFileContent(activeFile.fileName, newCode);
+    }
   }
 
   handleCompilerRequest(){

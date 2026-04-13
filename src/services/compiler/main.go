@@ -10,7 +10,8 @@ import (
 
 func handleRequests() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/request", routes.GetResources)
+	mux.HandleFunc("POST /v1/request", routes.GetResources)
+    mux.HandleFunc("POST /v1/start/{id}", routes.StartCompile)
 	return mux
 }
 
