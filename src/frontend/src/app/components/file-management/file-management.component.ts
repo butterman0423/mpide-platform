@@ -4,11 +4,11 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FileCardComponent } from '../file-card/file-card.component';
 import { IdeFile } from '../../models/file.model';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FileInsertion } from '../../services/file-insertion';
-import { FileSelection } from '../../services/file-selection';
-import { FileStoreService } from '../../services/file-store';
-import { FileDeletion } from '../../services/file-deletion';
-import { EventService } from '../../services/event-service';
+import { FileInsertion } from '../../services/file-services/file-insertion';
+import { FileSelection } from '../../services/file-services/file-selection';
+import { FileStoreService } from '../../services/file-services/file-store';
+import { FileDeletion } from '../../services/file-services/file-deletion';
+import { EventService } from '../../services/event-services/event-service';
 
 @Component({
   selector: 'app-file-management',
@@ -80,6 +80,9 @@ export class FileManagementComponent{
   }
 
   handleEditFile(file: IdeFile): void {
+    if (this.addFile) {
+      this.resetAddFile();
+    }
     this.editFile.set(file.fileName);
   }
 
