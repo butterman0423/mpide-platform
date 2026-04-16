@@ -1,6 +1,7 @@
-import { Component } from "@angular/core";
+import { Component, inject } from "@angular/core";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
+import { ProjectDropDownService } from "../../services/project-service";
 
 @Component({
     selector: 'app-project-menu',
@@ -9,6 +10,8 @@ import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
     styleUrl: './project-menu.css'
   })
   export class ProjectMenuComponent {
+    private projectService = inject(ProjectDropDownService)
+
     protected options = [
         { label: "New Project",  action: () => this.handleNewProject(), icon: `plus` },
         { label: "Open Project", action: () => this.handleOpenProject(),icon: `folder-open` },
@@ -34,8 +37,15 @@ import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
         alert("Rename")
     }
 
-    handleExport(){
-        alert("Export")
+    async handleExport(){
+        const zippedFiles: Blob = await this.projectService.exportProject();
+
+        const link = document.createElement("a")
+        link.href = URL.createObjectURL(zippedFiles);
+        link.download = "UntitledProject.zip"
+        link.click()
+        link.remove()
+
     }
 
     handleDelete(){

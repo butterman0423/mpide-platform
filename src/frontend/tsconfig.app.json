@@ -3,7 +3,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/app",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "types": [
       "node",
       "w3c-web-usb"
