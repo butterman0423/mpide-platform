@@ -1,5 +1,5 @@
 import { effect, Injectable, signal } from '@angular/core';
-import { IdeFile } from '../models/file.model';
+import { IdeFile } from '../../models/file.model';
 
 @Injectable({
   providedIn: 'root'

@@ -1,10 +1,10 @@
 import { Component, input, inject, Output, EventEmitter, signal, computed, effect } from '@angular/core';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { IdeFile } from '../../models/file.model';
-import { FileSelection } from '../../services/file-selection';
+import { FileSelection } from '../../services/file-services/file-selection';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FileStoreService } from '../../services/file-store';
+import { FileStoreService } from '../../services/file-services/file-store';
 
 
 @Component({
