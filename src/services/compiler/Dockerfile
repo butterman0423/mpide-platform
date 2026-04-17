@@ -32,6 +32,12 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 
 ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y \
+    golang-${GO_VERSION} \
+    gcc-avr \
+    avr-libc \
+    avrdude
 ENV PATH=$PATH:/usr/lib/go-${GO_VERSION}/bin
 
 # Expose Important ENV fields for Program

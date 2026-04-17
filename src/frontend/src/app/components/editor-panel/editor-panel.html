@@ -23,6 +23,7 @@
 
     <ngx-monaco-editor class="flex-1 flex flex-col min-w-0 h-full"
       [options]="editorOptions" 
-      [(ngModel)]="code">
+      [(ngModel)]="code"
+      (ngModelChange)="onCodeChange($event)">
     </ngx-monaco-editor>
 }
