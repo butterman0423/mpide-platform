@@ -2,13 +2,13 @@ import { Component, PLATFORM_ID, inject, effect, OnInit, OnDestroy } from '@angu
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FileSelection } from '../../services/file-selection';
+import { FileSelection } from '../../services/file-services/file-selection';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { BoardSelectorComponent } from '../board-selector/board-selector';
 import { Subscription } from 'rxjs';
-import { EventService } from '../../services/event-service';
-import { FileCompilerService } from '../../services/file-compiler';
-import { FileStoreService } from '../../services/file-store';
+import { EventService } from '../../services/event-services/event-service';
+import { FileCompilerService } from '../../services/file-services/file-compiler';
+import { FileStoreService } from '../../services/file-services/file-store';
 
 @Component({
   selector: 'app-editor-panel',

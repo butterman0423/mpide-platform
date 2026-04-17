@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { IdeFile } from '../models/file.model';
+import { IdeFile } from '../../models/file.model';
 
 @Injectable({
   providedIn: 'root',

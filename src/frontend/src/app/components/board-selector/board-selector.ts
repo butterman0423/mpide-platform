@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BoardService } from '../../services/board';
+import { BoardService } from '../../services/board-services/board';
 
 @Component({
   selector: 'app-board-selector',
