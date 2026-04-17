@@ -13,4 +13,9 @@ import { ProjectMenuComponent } from './components/project-menu/project-menu.com
 })
 export class App {
   protected readonly title = signal('mpide-frontend');
+  protected activeProjectName = signal("Untitled Project");
+
+  handleProjectCreated(newName: string){
+    this.activeProjectName.set(newName);
+  }
 }

@@ -49,6 +49,7 @@
     "@angular/compiler-cli": "^21.1.5",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/express": "^5.0.1",
+    "@types/jszip": "^3.4.0",
     "@types/node": "^20.17.19",
     "@types/w3c-web-usb": "^1.0.13",
     "angular-eslint": "21.1.0",

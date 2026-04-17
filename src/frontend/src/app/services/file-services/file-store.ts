@@ -24,6 +24,18 @@ export class FileStoreService {
     }
   ]);
 
+  resetForNewProject(): IdeFile {
+    const blankFile: IdeFile = {
+      fileName: "main.c",
+      fileLink: "/app/user123/main.c",
+      fileContent: '#include <stdio.h>\n\nint main() {\n    return 0;\n}'
+    };
+
+    this.fileList.set([blankFile]);
+
+    return blankFile;
+  }
+
   updateFileContent(fileName: string, newContent: string) {
     this.fileList.update(files => 
       files.map(f => f.fileName === fileName ? { ...f, fileContent: newContent } : f)

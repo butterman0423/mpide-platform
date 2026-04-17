@@ -21,3 +21,11 @@
     </ul>
   </nz-dropdown-menu>
 </div>
+
+@if (showNewProjectModal()) {
+  <app-new-project-modal
+    [existingProjectNames]="projectNames()"
+    (createProject)="handleCreateProject($event)"
+    (cancelModal)="onNewProjectCancel()"
+  />
+}
