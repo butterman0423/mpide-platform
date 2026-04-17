@@ -10,19 +10,25 @@ export class FileStoreService {
     {
       fileName: "hi.cpp",
       fileLink: "/app/user123/hi.txt",
-      fileContent: 'function x() {\nconsole.log("Hello world!");\n}'
+      fileContent: '#include <iostream>\nint main() { return 0; }'
     },
     {
       fileName: "main.c",
       fileLink: "/app/user123/main.c",
-      fileContent: 'function x() {\nconsole.log("YERRRRRR");\n}'
+      fileContent: '#include <avr/io.h>\nint main() { return 0; }'
     },
     {
       fileName: "monkey.c",
       fileLink: "/app/user123/monkey.c",
-      fileContent: 'function x() {\nconsole.log("le butter is le butter");\n}'
+      fileContent: '#include <avr/io.h>\nint main() { return 0; }'
     }
   ]);
+
+  updateFileContent(fileName: string, newContent: string) {
+    this.fileList.update(files => 
+      files.map(f => f.fileName === fileName ? { ...f, fileContent: newContent } : f)
+    );
+  }
 
   //Sort the files so its easier to insert new ones
   constructor(){
