@@ -1,16 +1,27 @@
-import { Component, inject } from "@angular/core";
+import { Component, signal, output, inject } from "@angular/core";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
+import { NewProjectModalComponent } from "../new-project/new-project-modal.component";
 import { ProjectDropDownService } from "../../services/project-service";
+import { FileStoreService } from "../../services/file-services/file-store";
+import { FileSelection } from "../../services/file-services/file-selection";
 
 @Component({
     selector: 'app-project-menu',
-    imports: [NzIconModule, NzDropdownModule],
+    imports: [NzIconModule, NzDropdownModule, NewProjectModalComponent],
     templateUrl: './project-menu.html',
     styleUrl: './project-menu.css'
   })
   export class ProjectMenuComponent {
-    private projectService = inject(ProjectDropDownService)
+    // Both sets of injected services are kept
+    private projectService = inject(ProjectDropDownService);
+    public fileStoreList = inject(FileStoreService);
+    public fileSelectionService = inject(FileSelection);
+    
+    projectCreated = output<string>();
+    protected showNewProjectModal = signal(false);
+    protected projectNames = signal<string[]>(["Untitled Project"]);
+    protected currentProjectName = signal("Untitled Project");
 
     protected options = [
         { label: "New Project",  action: () => this.handleNewProject(), icon: `plus` },
@@ -22,7 +33,35 @@ import { ProjectDropDownService } from "../../services/project-service";
       ];
 
     handleNewProject(){
-        alert("New Project")
+        this.showNewProjectModal.set(true);
+    }
+
+    private getUniqueName(name: string): string {
+        let finalName = name;
+        let counter = 1;
+        const existingNames = this.projectNames();
+
+        while (existingNames.includes(finalName)) {
+            finalName = `${name} (${counter})`;
+            counter++;
+        }
+        return finalName;
+    }
+
+    handleCreateProject(name: string) {
+        const uniqueName = this.getUniqueName(name);
+        this.projectNames.update(names => [...names, uniqueName]);
+        this.currentProjectName.set(uniqueName);
+        
+        const newMainFile = this.fileStoreList.resetForNewProject();
+        this.fileSelectionService.selectFile(newMainFile);
+        
+        this.showNewProjectModal.set(false);
+        this.projectCreated.emit(uniqueName); 
+    }
+
+    onNewProjectCancel() {
+        this.showNewProjectModal.set(false);
     }
 
     handleOpenProject(){
@@ -42,7 +81,8 @@ import { ProjectDropDownService } from "../../services/project-service";
 
         const link = document.createElement("a")
         link.href = URL.createObjectURL(zippedFiles);
-        link.download = "UntitledProject.zip"
+        // Updated this to use your new currentProjectName signal
+        link.download = `${this.currentProjectName()}.zip`;
         link.click()
         link.remove()
 
