@@ -1,6 +1,7 @@
 package utilites
 
 import (
+	"log"
 	"os"
 )
 
@@ -11,4 +12,16 @@ func GetEnv(key string, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+// Util function cause of golingolangci-lint bitch ass
+func CloseResource(resource any) func() {
+	return func() {
+		if closer, ok := resource.(interface{ Close() error }); ok {
+			if err := closer.Close(); err != nil {
+				log.Printf("Failed to close resource: %v", err)
+			}
+		}
+	}
+
 }

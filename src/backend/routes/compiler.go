@@ -3,13 +3,15 @@ package routes
 import (
 	"backend/utilites"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
-	"encoding/json"
+	"time"
 )
 
 func RequestCompiler(w http.ResponseWriter, r *http.Request) {
@@ -145,5 +147,94 @@ func SubmitCompile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(resp.StatusCode)
 	if _, err := w.Write(body); err != nil {
 		log.Printf("Failed to write response body: %v", err)
+	}
+}
+
+func ListenToCompiler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "the method used is not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+
+	compilerUrl := utilites.GetEnv("COMPILER_URL", "")
+	if compilerUrl == "" {
+		log.Print("Missing COMPILER_URL environment variable")
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+
+	u, err := url.Parse(strings.TrimRight(compilerUrl, "/"))
+	if err != nil {
+		log.Printf("invalid COMPILER_URL: %v", err)
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+	u.Path = strings.TrimSuffix(u.Path, "/") + "/v1/start/" + url.PathEscape(id)
+	upstream := u.String()
+
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, upstream, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("Accept", "text/event-stream")
+
+	client := &http.Client{
+		Timeout: 0,
+		Transport: &http.Transport{
+			ResponseHeaderTimeout: 60 * time.Second,
+		},
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to reach compiler: %v", err), http.StatusBadGateway)
+		return
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Printf("failed to close upstream body: %v", err)
+		}
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		http.Error(w, string(body), resp.StatusCode)
+		return
+	}
+
+	for _, h := range []string{"Content-Type", "Cache-Control", "Connection", "X-Accel-Buffering"} {
+		if v := resp.Header.Get(h); v != "" {
+			w.Header().Set(h, v)
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	rc := http.NewResponseController(w)
+	buf := make([]byte, 4096)
+	for {
+		n, err := resp.Body.Read(buf)
+		if n > 0 {
+			if _, werr := w.Write(buf[:n]); werr != nil {
+				return
+			}
+			if err := rc.Flush(); err != nil {
+				return
+			}
+		}
+		if err != nil {
+			if err == io.EOF {
+				return
+			}
+			log.Printf("stream upstream: %v", err)
+			return
+		}
 	}
 }

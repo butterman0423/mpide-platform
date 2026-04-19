@@ -46,7 +46,7 @@ ENV FILES_PATH=${FS_PATH}
 
 RUN mkdir -p ${FS_PATH} \
     && chmod ${GRP_PERMS} ${FS_PATH} \
-    && chgrp ${USER_GID} ${FS_PATH}
+    && chgrp ${USER_GID} ${FS_PATH} 
 
 USER $USERNAME
 

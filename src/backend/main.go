@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"github.com/rs/cors"
 )
 
 func handleRequests() *http.ServeMux {
 	mux := http.NewServeMux()
 	// Sanity Check
-	mux.HandleFunc("POST /compiler/request", routes.RequestCompiler) 
-    mux.HandleFunc("POST /compiler/j/{id}", routes.SubmitCompile)    
+	mux.HandleFunc("POST /compiler/request", routes.RequestCompiler)
+	mux.HandleFunc("POST /compiler/j/{id}", routes.SubmitCompile)
+	mux.HandleFunc("GET /compiler/poll", routes.ListenToCompiler)
 	return mux
 }
 
