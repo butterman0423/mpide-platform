@@ -78,9 +78,11 @@ import { FileSelection } from "../../services/file-services/file-selection";
 
     async handleSave(){
         try {
+            console.log(this.fileService.fileList())
             await this.opfsService.saveProject(this.fileService.projectName(), this.fileService.fileList());
+            alert("Project saved successfully!");
         } catch (err) {
-            console.error("Save failed:", err);
+            alert("Save failed)");
         }
     }
 

@@ -13,11 +13,24 @@ export class OpfsService {
     const root = await navigator.storage.getDirectory();
     const projectDir = await root.getDirectoryHandle(projectName, {create: true})
 
+    const fileNames: string[] = [];
+
+    for (const file of files){
+      fileNames.push(file.fileName);
+    }
+
     for (const file of files){
       const fileHandle = await projectDir.getFileHandle(file.fileName, {create: true});
       const writable = await fileHandle.createWritable();
       await writable.write(file.fileContent);
       await writable.close();
+    }
+
+    // To remove files that were deleted in editor
+    for await (let [name, handle] of projectDir.entries()) {
+      if (handle.kind === 'file' && !fileNames.includes(name)) {
+        await projectDir.removeEntry(name);
+      }
     }
   }
 
