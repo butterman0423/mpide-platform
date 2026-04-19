@@ -1,6 +1,5 @@
-import { Component, inject, signal, output } from '@angular/core';
+import { Component, inject, signal, output, OnInit } from '@angular/core';
 import { OpfsService } from '../../services/opfs';
-import { FileStoreService } from '../../services/file-services/file-store';
 import { FileSelection } from '../../services/file-services/file-selection';
 
 @Component({
@@ -9,7 +8,7 @@ import { FileSelection } from '../../services/file-services/file-selection';
   templateUrl: './project-modal.html',
   styleUrl: './project-modal.css',
 })
-export class ProjectModal {
+export class ProjectModal implements OnInit {
   closed = output<void>();
 
   opfsService = inject(OpfsService);
