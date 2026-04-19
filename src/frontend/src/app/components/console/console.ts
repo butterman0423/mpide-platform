@@ -1,12 +1,21 @@
 import { Component, forwardRef, input } from '@angular/core';
 import { NzIconDirective } from "ng-zorro-antd/icon";
 
+export type CompileConsoleRow = {
+  stage: string
+  message: string
+  is_error: boolean
+}
+
 export type MessageData = {
   ty: "LOG"
   dat: GeneralMessageData
 } | {
   ty: "ERROR"
   dat: ErrorMessageData
+} | {
+  ty: "BUILD"
+  dat: CompileConsoleRow
 }
 
 export interface GeneralMessageData {
@@ -21,10 +30,11 @@ export interface ErrorMessageData {
 @Component({
   selector: 'app-console',
   imports: [
-    NzIconDirective, 
+    NzIconDirective,
     forwardRef(() => ServerMessage),
     forwardRef(() => SystemMessage),
-    forwardRef(() => ErrorMessage)
+    forwardRef(() => ErrorMessage),
+    forwardRef(() => BuildMessage),
   ],
   templateUrl: './console.html',
   styleUrl: './console.css',
@@ -73,4 +83,16 @@ export class ErrorMessage {
 })
 export class DollarLine {
   msg = input.required<string>();
+}
+
+@Component({
+  selector: "app-msg-build",
+  imports: [],
+  templateUrl: "./messages/msg-build.html",
+  styleUrl: "./console.css",
+})
+export class BuildMessage {
+  stage = input.required<string>();
+  message = input.required<string>();
+  isError = input.required<boolean>();
 }

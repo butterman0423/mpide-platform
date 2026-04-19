@@ -21,6 +21,13 @@
                 @else if (item.ty === "ERROR") {
                     <app-msg-error [header]="item.dat.header" [msgs]="item.dat.msgs"></app-msg-error>
                 }
+                @else if (item.ty === "BUILD") {
+                    <app-msg-build
+                        [stage]="item.dat.stage"
+                        [message]="item.dat.message"
+                        [isError]="item.dat.is_error"
+                    />
+                }
             </div>
         }
     </div>
