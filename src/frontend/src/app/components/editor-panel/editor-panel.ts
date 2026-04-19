@@ -54,13 +54,6 @@ export class EditorPanel implements OnInit, OnDestroy {
     this.code = "";
   }
 
-  // onCodeChange(newCode: string) {
-  //   const activeFile = this.fileSelectionService.selectedFile();
-  //   if (activeFile && newCode !== undefined) {
-  //     this.fileStoreService.updateFileContent(activeFile.fileName, newCode);
-  //   }
-  // }
-
   handleCompilerRequest(){
     this.fileCompilerService.requestCompiler();
   }

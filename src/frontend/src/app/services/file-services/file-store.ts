@@ -6,9 +6,9 @@ import { IdeFile } from '../../models/file.model';
 })
 export class FileStoreService {
 
+  // This is used for the Project Name of the current project and the Filelist to store the current files
   projectName = signal<string>("Untitled Project");
-  fileList = signal<IdeFile[]>([
-  ]);
+  fileList = signal<IdeFile[]>([]);
 
   //Sort the files so its easier to insert new ones
   constructor(){
@@ -28,11 +28,5 @@ export class FileStoreService {
 
     return blankFile;
   }
-
-  // updateFileContent(fileName: string, newContent: string) {
-  //   this.fileList.update(files => 
-  //     files.map(f => f.fileName === fileName ? { ...f, fileContent: newContent } : f)
-  //   );
-  // }
 
 }
