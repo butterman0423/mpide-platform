@@ -1,0 +1,49 @@
+
+    <div class="modal-overlay"
+    role="button"
+    tabindex="0"
+    (mousedown)="onCancel()"
+    (keydown.enter)="onCancel()"
+    (window:keydown.escape)="onCancel()">
+    <div class="modal"
+        (mousedown)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title">
+
+        <div class="modal-header">
+        <h2 id="modal-title">Open Project</h2>
+        <button class="close-btn" (click)="onCancel()">✕</button>
+        </div>
+
+        <div class="modal-body">
+        @if (isLoading()) {
+            <span class="empty-msg">Loading projects...</span>
+        } @else if (projects().length === 0) {
+            <span class="empty-msg">No saved projects found.</span>
+        } @else {
+            <div class="project-list">
+            @for (project of projects(); track project) {
+                <button
+                class="project-item"
+                [class.selected]="selectedProject() === project"
+                (click)="selectProject(project)">
+                <span class="project-icon">📁</span>
+                <span class="project-name">{{ project }}</span>
+                </button>
+            }
+            </div>
+        }
+        </div>
+
+        <div class="modal-footer">
+        <div class="footer-right">
+            <button class="btn-cancel" (click)="onCancel()">Cancel</button>
+            <button class="btn-connect" [disabled]="!selectedProject()" (click)="onProjectSelected()">
+            Open
+            </button>
+        </div>
+        </div>
+
+    </div>
+    </div>
