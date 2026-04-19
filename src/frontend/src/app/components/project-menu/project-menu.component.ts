@@ -82,7 +82,7 @@ import { FileSelection } from "../../services/file-services/file-selection";
             await this.opfsService.saveProject(this.fileService.projectName(), this.fileService.fileList());
             alert("Project saved successfully!");
         } catch (err) {
-            alert("Save failed)");
+            alert(err instanceof Error ? err.message : "An unknown error occurred.");
         }
     }
 

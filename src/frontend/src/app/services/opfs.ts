@@ -27,7 +27,7 @@ export class OpfsService {
     }
 
     // To remove files that were deleted in editor
-    for await (let [name, handle] of projectDir.entries()) {
+    for await (const [name, handle] of projectDir.entries()) {
       if (handle.kind === 'file' && !fileNames.includes(name)) {
         await projectDir.removeEntry(name);
       }
