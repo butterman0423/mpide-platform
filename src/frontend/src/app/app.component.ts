@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FileManagementComponent } from "./components/file-management/file-management.component";
 import { EditorPanel } from './components/editor-panel/editor-panel';
 import { Console } from "./components/console/console";
 import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
+import { FileStoreService } from './services/file-services/file-store';
 
 
 @Component({
@@ -18,4 +19,8 @@ export class App {
   handleProjectCreated(newName: string){
     this.activeProjectName.set(newName);
   }
+
+  fileService = inject(FileStoreService);
+
+  
 }
