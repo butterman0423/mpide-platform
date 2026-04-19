@@ -18,7 +18,7 @@ export class App implements OnDestroy{
   protected activeProjectName = signal("Untitled Project");
   protected consoleMsgs = signal<MessageData[]>([]);
 
-  private isExecuting: boolean = false;
+  private isExecuting = false;
   private sseSubscription?: Subscription;
   private fileCompileService = inject(FileCompilerService)
 

@@ -1,7 +1,7 @@
 import { Component, forwardRef, input } from '@angular/core';
 import { NzIconDirective } from "ng-zorro-antd/icon";
 
-export type CompileConsoleRow = {
+export interface CompileConsoleRow {
   stage: string
   message: string
   is_error: boolean
