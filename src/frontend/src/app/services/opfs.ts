@@ -34,7 +34,7 @@ export class OpfsService {
     }
   }
 
-  async getProjects(){
+  async getProjects(): Promise<string[]> {
     const root = await navigator.storage.getDirectory();
     const projects: string[] = [];
     for await (const entry of root.values()){
@@ -64,5 +64,17 @@ export class OpfsService {
     }
     this.fileStore.projectName.set(projectName);
     this.fileStore.fileList.set(files);
+  }
+
+  async renameProject(oldName: string, newName: string, files: IdeFile[]){
+    const root = await navigator.storage.getDirectory();
+    
+    const projectsStored = await this.getProjects();
+
+    // If project is already saved in OPFS
+    if (projectsStored.includes(oldName)){
+      root.removeEntry(oldName, {recursive: true});
+      await this.saveProject(newName, files);
+    }
   }
 }
