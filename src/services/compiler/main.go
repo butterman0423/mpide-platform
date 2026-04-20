@@ -15,6 +15,7 @@ func handleRequests() *http.ServeMux {
 	mux.HandleFunc("POST /v1/request", routes.GetResources)
 	mux.HandleFunc("POST /v1/start/{id}", routes.StartCompile)
 	mux.HandleFunc("GET /v1/start/{id}", routes.StreamCompileLogs)
+	mux.HandleFunc("DELETE /v1/clean/{id}", routes.CleanUpResource)
 	return mux
 }
 

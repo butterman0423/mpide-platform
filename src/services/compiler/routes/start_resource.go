@@ -77,7 +77,7 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	outPath := fmt.Sprintf("%s/.log/%s-out.txt", filesPath, id)
+	outPath := filepath.Join(filesPath, ".log", fmt.Sprintf("%s-out.txt", id))
 	stdoutFile, err := os.Create(outPath)
 	if err != nil {
 		log.Printf("Failed to create stdout log %s: %v", outPath, err)
@@ -85,7 +85,7 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errPath := fmt.Sprintf("%s/.log/%s-err.txt", filesPath, id)
+	errPath := filepath.Join(filesPath, ".log", fmt.Sprintf("%s-err.txt", id))
 	stderrFile, err := os.Create(errPath)
 	if err != nil {
 		_ = stdoutFile.Close()
@@ -171,9 +171,9 @@ func StreamCompileLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logDir := fmt.Sprintf("%s/.log", filesPath)
-	outPath := fmt.Sprintf("%s/%s-out.txt", logDir, id)
-	errPath := fmt.Sprintf("%s/%s-err.txt", logDir, id)
+	logDir := filepath.Join(filesPath, ".log")
+	outPath := filepath.Join(logDir, fmt.Sprintf("%s-out.txt", id))
+	errPath := filepath.Join(logDir, fmt.Sprintf("%s-err.txt", id))
 
 	rc := http.NewResponseController(w)
 	w.Header().Set("Content-Type", "text/event-stream")

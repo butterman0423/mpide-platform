@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -42,11 +43,7 @@ func RequestCompiler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			log.Printf("Failed to close compiler response body: %v", err)
-		}
-	}()
+	defer utilites.CloseResource(resp.Body)()
 
 	body, err := io.ReadAll(resp.Body)
 
@@ -131,11 +128,7 @@ func SubmitCompile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Failed to start compile job: %v", err), http.StatusInternalServerError)
 		return
 	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			log.Printf("Failed to close compiler response body: %v", err)
-		}
-	}()
+	defer utilites.CloseResource(resp.Body)()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -197,11 +190,7 @@ func ListenToCompiler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("failed to reach compiler: %v", err), http.StatusBadGateway)
 		return
 	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			log.Printf("failed to close upstream body: %v", err)
-		}
-	}()
+	defer utilites.CloseResource(resp.Body)()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
@@ -237,4 +226,54 @@ func ListenToCompiler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func RetrieveExecutable(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "the method used is not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+
+	compilerUrl := utilites.GetEnv("COMPILER_URL", "")
+	if compilerUrl == "" {
+		log.Print("Missing COMPILER_URL environment variable")
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+
+	filesPath := utilites.GetEnv("FILES_PATH", "")
+
+	dirPath := fmt.Sprintf("%s/%s", filesPath, id)
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	dirPath = filepath.Clean(dirPath)
+	execPath := filepath.Join(dirPath, "main.elf")
+	if _, err := os.Stat(execPath); os.IsNotExist(err) {
+		http.Error(w, "Missing executable file main.elf", http.StatusNotFound)
+		return
+	}
+
+	// Clean up resources
+	cleanUpQuery := fmt.Sprintf("%s/v1/clean/%s", compilerUrl, id)
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodDelete, cleanUpQuery, nil)
+	if err != nil {
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+
+	if _, err := http.DefaultClient.Do(req); err != nil {
+		log.Printf("Failed to clean compiler resources")
+	}
+
+	http.ServeFile(w, r, execPath)
+
 }

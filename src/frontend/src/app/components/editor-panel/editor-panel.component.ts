@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, effect, OnInit, OnDestroy, output } from '@angular/core';
+import { Component, PLATFORM_ID, inject, effect, OnInit, OnDestroy, output, untracked } from '@angular/core';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,7 +49,15 @@ export class EditorPanel implements OnInit, OnDestroy {
       } else {
         this.code = '';
       }
+    })
+
+    effect(() => {
+      const fileList = this.fileStoreService.fileList();
+      // If fileList is updated in anyway, revoke compiler Id request
+      untracked(() => {
+      this.compilerId = undefined;
     });
+    })
   }
 
   handleDelete(){
@@ -65,8 +73,6 @@ export class EditorPanel implements OnInit, OnDestroy {
       },
       error: (err) => console.log(err)
     });
-
-    // alert(this.compilerId)
   }
 
   handleExecuteRequest() {

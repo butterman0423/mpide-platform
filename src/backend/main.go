@@ -15,6 +15,7 @@ func handleRequests() *http.ServeMux {
 	// Sanity Check
 	mux.HandleFunc("POST /compiler/request", routes.RequestCompiler)
 	mux.HandleFunc("POST /compiler/j/{id}", routes.SubmitCompile)
+	mux.HandleFunc("GET /compiler/j/{id}", routes.RetrieveExecutable)
 	mux.HandleFunc("GET /compiler/poll", routes.ListenToCompiler)
 	return mux
 }

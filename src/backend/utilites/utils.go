@@ -1,6 +1,9 @@
 package utilites
 
-import "os"
+import (
+	"log"
+	"os"
+)
 
 // Gets the value associated with the environment variable key
 // If it doesn't exist, then it just returns the fallback
@@ -9,4 +12,15 @@ func GetEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func CloseResource(resource any) func() {
+	return func() {
+		if closer, ok := resource.(interface{ Close() error }); ok {
+			if err := closer.Close(); err != nil {
+				log.Printf("Failed to close resource: %v", err)
+			}
+		}
+	}
+
 }

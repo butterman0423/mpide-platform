@@ -7,11 +7,13 @@ import { Subscription } from 'rxjs';
 import { FileCompilerService, CompileStreamEvent } from './services/file-services/file-compiler';
 import { OpfsService } from './services/opfs';
 import { FileStoreService } from './services/file-services/file-store';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
   selector: 'app-root',
-  imports: [FileManagementComponent, EditorPanel, Console, ProjectMenuComponent],
+  imports: [FileManagementComponent, EditorPanel, Console, ProjectMenuComponent, FormsModule, NzIconModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
