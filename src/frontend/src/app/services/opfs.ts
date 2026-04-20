@@ -77,4 +77,18 @@ export class OpfsService {
       await this.saveProject(newName, files);
     }
   }
+
+  async deleteProject(){
+      const root = await navigator.storage.getDirectory();
+
+      const currentProjectName = this.fileStore.projectName();
+
+      const projectsStored = await this.getProjects();
+
+      if (projectsStored.includes(currentProjectName)){
+        root.removeEntry(currentProjectName, {recursive: true});
+      }
+      this.fileStore.projectName.set("Untitled Project");
+      this.fileStore.fileList.set([]);
+  }
 }
