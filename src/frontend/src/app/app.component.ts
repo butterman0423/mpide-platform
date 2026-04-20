@@ -35,6 +35,10 @@ export class App {
       alert("Project with that name already exists");
       return;
     }
+    else if (this.renamedProject.trim() === ""){
+      alert("Project name cannot be empty");
+      return;
+    }
     else{
       const oldProjectName = this.fileStoreService.projectName();
       this.fileStoreService.projectName.set(this.renamedProject);
