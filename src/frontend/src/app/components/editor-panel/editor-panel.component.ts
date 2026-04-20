@@ -44,23 +44,17 @@ export class EditorPanel implements OnInit, OnDestroy {
   constructor() {
     effect(() => {
       const file = this.fileSelectionService.selectedFile();
-
       if (file) {
-        this.code = file.fileContent;
+        this.code = this.fileSelectionService.selectedFileContent();
+      } else {
+        this.code = '';
       }
     });
   }
 
   handleDelete(){
     this.fileSelectionService.clearFile();
-    this.code = '';
-  }
-
-  onCodeChange(newCode: string) {
-    const activeFile = this.fileSelectionService.selectedFile();
-    if (activeFile && newCode !== undefined) {
-      this.fileStoreService.updateFileContent(activeFile.fileName, newCode);
-    }
+    this.code = "";
   }
 
   handleCompilerRequest(){
@@ -82,5 +76,9 @@ export class EditorPanel implements OnInit, OnDestroy {
     }
 
     this.executeRequest.emit(this.compilerId);
+  }
+
+  onCodeChange(newCode: string) {
+    this.fileSelectionService.updateSelectedFileContent(newCode);
   }
 }

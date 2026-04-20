@@ -6,23 +6,18 @@ import { IdeFile } from '../../models/file.model';
 })
 export class FileStoreService {
 
-  fileList = signal<IdeFile[]>([
-    {
-      fileName: "hi.cpp",
-      fileLink: "/app/user123/hi.txt",
-      fileContent: '#include <iostream>\nint main() { return 0; }'
-    },
-    {
-      fileName: "main.c",
-      fileLink: "/app/user123/main.c",
-      fileContent: '#include <avr/io.h>\nint main() { return 0; }'
-    },
-    {
-      fileName: "monkey.c",
-      fileLink: "/app/user123/monkey.c",
-      fileContent: '#include <avr/io.h>\nint main() { return 0; }'
-    }
-  ]);
+  // This is used for the Project Name of the current project and the Filelist to store the current files
+  projectName = signal<string>("Untitled Project");
+  fileList = signal<IdeFile[]>([]);
+
+  projectNameIsBeingEdited = signal<boolean>(false);
+
+  //Sort the files so its easier to insert new ones
+  constructor(){
+    effect(() => {
+      this.fileList().sort((a,b) => a.fileName.localeCompare(b.fileName));
+    })
+  }
 
   resetForNewProject(): IdeFile {
     const blankFile: IdeFile = {
@@ -34,19 +29,6 @@ export class FileStoreService {
     this.fileList.set([blankFile]);
 
     return blankFile;
-  }
-
-  updateFileContent(fileName: string, newContent: string) {
-    this.fileList.update(files => 
-      files.map(f => f.fileName === fileName ? { ...f, fileContent: newContent } : f)
-    );
-  }
-
-  //Sort the files so its easier to insert new ones
-  constructor(){
-    effect(() => {
-      this.fileList().sort((a,b) => a.fileName.localeCompare(b.fileName));
-    })
   }
 
 }

@@ -29,3 +29,6 @@
     (cancelModal)="onNewProjectCancel()"
   />
 }
+  @if(isProjectOpen()) {
+    <app-project-modal (closed)="isProjectOpen.set(false)" />
+  }
