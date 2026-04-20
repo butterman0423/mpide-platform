@@ -1,4 +1,4 @@
-import { Component, inject, output, signal } from "@angular/core";
+import { Component, HostListener, inject, output, signal } from "@angular/core";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NewProjectModalComponent } from "../new-project/new-project-modal.component";
@@ -15,7 +15,6 @@ import { FileSelection } from "../../services/file-services/file-selection";
     styleUrl: './project-menu.css'
   })
   export class ProjectMenuComponent {
-    // Both sets of injected services are kept
     private projectService = inject(ProjectDropDownService);
     public fileStoreList = inject(FileStoreService);
     public fileSelectionService = inject(FileSelection);
@@ -39,8 +38,20 @@ import { FileSelection } from "../../services/file-services/file-selection";
     public projectList: string[] = [];
     public isProjectOpen = signal<boolean>(false);
 
+    public WarningModal = signal<boolean>(false);
+    public ActionRemember = ""; 
+
+    public showSuccessModal = signal<boolean>(false);
+    public successMessage = "";
+
+    @HostListener('window:beforeunload', ['$event'])
+    unloadNotification($event: BeforeUnloadEvent): void {
+        $event.returnValue = "Any unsaved data may be lost";
+    }
+
     handleNewProject(){
-        this.showNewProjectModal.set(true);
+        this.ActionRemember = "new";
+        this.WarningModal.set(true);
     }
 
     private getUniqueName(name: string): string {
@@ -73,16 +84,21 @@ import { FileSelection } from "../../services/file-services/file-selection";
     }
 
     async handleOpenProject(){
-        this.isProjectOpen.set(true);
+        this.ActionRemember = "open";
+        this.WarningModal.set(true);
     }
 
     async handleSave(){
         try {
             console.log(this.fileService.fileList())
             await this.opfsService.saveProject(this.fileService.projectName(), this.fileService.fileList());
-            alert("Project saved successfully!");
+            // alert("Project saved successfully!");
+            this.successMessage = "Project saved successfully!";
+            this.showSuccessModal.set(true);
         } catch (err) {
-            alert(err instanceof Error ? err.message : "An unknown error occurred.");
+            // alert(err instanceof Error ? err.message : "An unknown error occurred.");
+            this.successMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+            this.showSuccessModal.set(true);
         }
     }
 
@@ -103,8 +119,37 @@ import { FileSelection } from "../../services/file-services/file-selection";
     }
 
     async handleDelete(){
-        await this.opfsService.deleteProject();
-        this.fileSelectionService.clearFile();
-        alert("Project deleted successfully!");
+        this.ActionRemember = "delete";
+        this.WarningModal.set(true);
     }
+
+    closeWarningModal() {
+        this.WarningModal.set(false);
+        this.ActionRemember = "";
+    }
+
+    closeSuccessModal() {
+        this.showSuccessModal.set(false);
+        this.successMessage = "";
+    }
+
+    async confirmWarn() {
+        if (this.ActionRemember === "new"){
+            this.showNewProjectModal.set(true);
+        }
+        else if (this.ActionRemember === "open"){
+            this.isProjectOpen.set(true);
+        }
+        else if (this.ActionRemember === "delete"){
+            await this.opfsService.deleteProject();
+            this.fileSelectionService.clearFile();
+            // alert("Project deleted successfully!");
+            this.successMessage = "Project deleted successfully!";
+            this.showSuccessModal.set(true);
+        }
+
+        this.closeWarningModal();
+    }
+
+
   }
