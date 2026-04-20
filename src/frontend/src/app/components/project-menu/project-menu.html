@@ -32,3 +32,72 @@
   @if(isProjectOpen()) {
     <app-project-modal (closed)="isProjectOpen.set(false)" />
   }
+  
+  @if (WarningModal()) {
+  <div class="modal-overlay"
+    role="button"
+    tabindex="0"
+    (mousedown)="closeWarningModal()"
+    (keydown.enter)="closeWarningModal()"
+    (window:keydown.escape)="closeWarningModal()">
+    
+    <div class="modal"
+      (mousedown)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="warning-modal-title">
+      
+      <div class="modal-header">
+        <h2 id="warning-modal-title" style="color: #f87171;">Warning: Data Loss</h2>
+        <button class="close-btn" (click)="closeWarningModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <span class="modal-label" style="font-size: 14px; color: #fff;">
+          Any unsaved data may be lost. Are you sure you want to proceed?
+        </span>
+      </div>
+      
+      <div class="modal-footer">
+        <div class="footer-right">
+          <button class="btn-cancel" (click)="closeWarningModal()">Cancel</button>
+          <button class="btn-connect" (click)="confirmWarn()">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showSuccessModal()) {
+  <div class="modal-overlay"
+    role="button"
+    tabindex="0"
+    (mousedown)="closeSuccessModal()"
+    (keydown.enter)="closeSuccessModal()"
+    (window:keydown.escape)="closeSuccessModal()">
+    
+    <div class="modal"
+      (mousedown)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="success-modal-title">
+      
+      <div class="modal-header">
+        <h2 id="success-modal-title" style="color: #379409;">Notification</h2>
+        <button class="close-btn" (click)="closeSuccessModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <span class="modal-label" style="font-size: 14px; color: #fff;">
+          {{ successMessage }} 
+        </span>
+      </div>
+      
+      <div class="modal-footer">
+        <div class="footer-right">
+          <button class="btn-success" (click)="closeSuccessModal()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
