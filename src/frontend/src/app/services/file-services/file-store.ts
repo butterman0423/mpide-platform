@@ -10,6 +10,8 @@ export class FileStoreService {
   projectName = signal<string>("Untitled Project");
   fileList = signal<IdeFile[]>([]);
 
+  projectNameIsBeingEdited = signal<boolean>(false);
+
   //Sort the files so its easier to insert new ones
   constructor(){
     effect(() => {

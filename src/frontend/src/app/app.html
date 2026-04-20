@@ -7,7 +7,47 @@
         Project
         <nz-icon nzType="caret-down" nzTheme="outline" />
       </button> -->
-      <span class="text-sm text-gray-400">{{fileService.projectName()}}</span>
+
+      @if(fileStoreService.projectNameIsBeingEdited()){
+        <div class="flex items-center gap-1.5 w-full">
+          <input
+            type="text"
+            class="flex-1 min-w-0 px-2 py-1 text-sm text-white bg-white/10 border border-gray-500 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 rounded transition-all duration-150"
+            [(ngModel)]="renamedProject"
+            (keyup.enter)="acceptRename()"
+          />
+
+          <button
+            type="submit"
+            class="shrink-0 flex items-center justify-center w-7 h-7 rounded bg-blue-500 hover:bg-blue-400 active:bg-blue-600 text-white transition-colors duration-150"
+            title="Confirm"
+            (click) = "acceptRename()"
+            
+          >
+            <nz-icon nzType="check" nzTheme="outline" />
+          </button>
+
+          <button
+            type="button"
+            class="shrink-0 flex items-center justify-center w-7 h-7 rounded bg-red-900 hover:bg-red-700 active:bg-red-800 text-white transition-colors duration-150"
+            title="Cancel"
+            (click) = "cancelRename()"
+          >
+            <nz-icon nzType="close" nzTheme="outline" />
+          </button>
+        </div>
+}
+      @else {
+
+        <button 
+          class="text-sm text-gray-400 hover:bg-[#54667a] cursor-pointer" 
+
+          (click)="fileStoreService.projectNameIsBeingEdited.set(true)">
+          {{fileStoreService.projectName()}}
+        </button>
+      }
+
+
     </div>
     <div class="flex items-center gap-4">
       <span class="text-xs text-gray-500">Copyright</span>

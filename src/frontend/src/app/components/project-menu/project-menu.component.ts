@@ -87,7 +87,7 @@ import { FileSelection } from "../../services/file-services/file-selection";
     }
 
     handleRename(){
-        alert("Rename")
+        this.fileStoreList.projectNameIsBeingEdited.set(true);
     }
 
     async handleExport(){
