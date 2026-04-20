@@ -102,7 +102,9 @@ import { FileSelection } from "../../services/file-services/file-selection";
 
     }
 
-    handleDelete(){
-        alert("Delete")
+    async handleDelete(){
+        await this.opfsService.deleteProject();
+        this.fileSelectionService.clearFile();
+        alert("Project deleted successfully!");
     }
   }
