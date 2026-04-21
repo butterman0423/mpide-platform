@@ -25,6 +25,7 @@ export class FileSelection {
   updateSelectedFileContent(content: string) {
     const file = this.selectedFile();
     if (!file) return;
+    if (content === file.fileContent) return;
 
     // Update the file in the file list
     this.fileStore.fileList.update(files =>

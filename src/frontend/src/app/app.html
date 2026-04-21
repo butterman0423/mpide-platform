@@ -2,7 +2,7 @@
   <!-- Top Navbar -->
   <div class="flex items-center justify-between px-4 bg-[#0F172A] border-b border-[#1E293B] h-[5vh] min-h-[40px]">
     <div class="flex items-center gap-3">
-      <app-project-menu (projectCreated)="handleProjectCreated($event)"/>
+      <app-project-menu (projectCreated)="handleProjectCreated($event)" (projectSelected)="handleSelectedProject($event)"/>
       <!-- <button class="text-xs px-3 py-1 bg-[#1890FF] text-white rounded hover:bg-[#475569] flex flex-row items-center justify-center gap-1">
         Project
         <nz-icon nzType="caret-down" nzTheme="outline" />
@@ -59,7 +59,7 @@
   <!-- Main Content -->
   <div class="flex flex-1 overflow-hidden">
     <app-file-management class="flex-shrink-0 basis-[15%]"></app-file-management>
-    <app-editor-panel class="flex-1 flex flex-col min-w-0 h-full" />
-    <app-console class="max-w-[30%] w-full" [msgs]="[]"></app-console>
+    <app-editor-panel class="flex-1 flex flex-col min-w-0 h-full" (executeRequest)="handleExecute($event)"/>
+    <app-console class="max-w-[30%] w-full" [msgs]="consoleMsgs()"></app-console>
   </div>
 </div>

@@ -20,6 +20,7 @@ import { FileSelection } from "../../services/file-services/file-selection";
     public fileSelectionService = inject(FileSelection);
     
     projectCreated = output<string>();
+    projectSelected = output<string>();
     protected showNewProjectModal = signal(false);
     protected projectNames = signal<string[]>(["Untitled Project"]);
     // protected currentProjectName = signal("Untitled Project");
@@ -151,5 +152,6 @@ import { FileSelection } from "../../services/file-services/file-selection";
         this.closeWarningModal();
     }
 
+    
 
   }

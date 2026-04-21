@@ -1,17 +1,25 @@
-import { inject, Injectable} from '@angular/core';
+import { inject, Injectable, NgZone} from '@angular/core';
 import { IdeFile } from '../../models/file.model';
-import { HttpClient, HttpHeaders, HttpErrorResponse, HttpStatusCode, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse, } from '@angular/common/http';
 import { environment } from '../../../environments/environment.development';
 import { FileStoreService } from './file-store';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 
 interface requestCompilerResp {
-    id: string
+  id: string
 }
 
 interface ProjectFile {
-    file_name: string
-    extension: string
-    content: string
+  file_name: string
+  extension: string
+  content: string
+}
+
+/** Payload from compiler SSE (`data:` JSON). */
+export interface CompileStreamEvent {
+  stage: string
+  message: string
+  is_error: boolean
 }
 
 @Injectable({
@@ -20,16 +28,17 @@ interface ProjectFile {
 export class FileCompilerService {
   private http = inject(HttpClient)
   private fileStoreService = inject(FileStoreService)
+  private _zone = inject(NgZone)
 
 
-  requestCompiler(){
+  requestCompiler(): Observable<string> {
     const fileList: IdeFile[] = this.fileStoreService.fileList();
 
     const nonEmptyFiles = fileList.filter(f => f.fileContent.trim().length > 0);
 
     if (nonEmptyFiles.length === 0) {
       alert("No files with content to compile.");
-      return;
+      return throwError(() => new Error("No files with content to compile."));
     }
 
     const numFiles: number = nonEmptyFiles.length;
@@ -43,32 +52,33 @@ export class FileCompilerService {
     const url = `${environment.backendUrl}compiler/request`;
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    this.http.post<requestCompilerResp>(url, body, {observe: "response", headers: headers}).subscribe({
-      next: (data: HttpResponse<requestCompilerResp>) => {
-        const id = data.body?.id;
-        if (!id) {
-          alert("Failed to get compiler id. Please try again.");
-          return;
-        }
-        this.submitFiles(id, nonEmptyFiles);
-      },
-      error: (err: HttpErrorResponse) => {
-        if (err.status == HttpStatusCode.InsufficientStorage) {
-          alert("Request unsuccessful. Please try again in a bit");
-        } else {
-          alert(err);
-        }
-      }
-    });
+    return this.http.post<requestCompilerResp>(url, body, {headers: headers}).pipe(
+      map(res => res.id),
+      catchError(err => {
+        console.log(err)
+        return of("")
+      })
+    )
   }
 
-  private submitFiles(id: string, fileList: IdeFile[]) {
-    const payload: ProjectFile[] = fileList
-      .filter((f): f is IdeFile & { fileLink: string } => f.fileLink !== null)
+  /**
+   * Opens the compile log SSE immediately and POSTs project files in parallel.
+   * Emits one value per SSE message until stage DONE, then completes.
+   */
+  submitFiles(id: string): Observable<CompileStreamEvent> {
+    const fileList: IdeFile[] = this.fileStoreService.fileList();
+
+    const nonEmptyFiles = fileList.filter(f => f.fileContent.trim().length > 0);
+
+    if (nonEmptyFiles.length === 0) {
+      return throwError(() => new Error("No files with content to compile."));
+    }
+
+    const payload: ProjectFile[] = nonEmptyFiles
       .map(f => {
         const dotIndex = f.fileName.lastIndexOf('.');
         const fileName = dotIndex !== -1 ? f.fileName.substring(0, dotIndex) : f.fileName;
-        const extension = dotIndex !== -1 ? f.fileName.substring(dotIndex) : '.c'; 
+        const extension = dotIndex !== -1 ? f.fileName.substring(dotIndex).toLowerCase() : '.c';
         return {
           file_name: fileName,
           extension: extension,
@@ -76,18 +86,92 @@ export class FileCompilerService {
         };
       });
 
-    const url = `${environment.backendUrl}compiler/j/${id}`;
+    if (payload.length === 0) {
+      return throwError(() => new Error("No valid files to compile."));
+    }
+
+    const postUrl = `${environment.backendUrl}compiler/j/${id}`;
+    const sseUrl = `${environment.backendUrl}compiler/poll?id=${encodeURIComponent(id)}`;
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    this.http.post(url, payload, {observe: "response", responseType: 'text', headers: headers}).subscribe({
-      next: () => {
-        alert("Compilation successful!");
-      },
-      error: (err: HttpErrorResponse) => {
-        alert(err.error); 
-        console.error('Compiler Error Message:', err.error);
-      }
+    return new Observable<CompileStreamEvent>(observer => {
+      const eventSource = new EventSource(sseUrl);
+      let finished = false;
+
+      const end = () => {
+        if (finished) {
+          return;
+        }
+        finished = true;
+        eventSource.close();
+      };
+
+      const parseAndEmit = (raw: string) => {
+        const ev = JSON.parse(raw) as CompileStreamEvent;
+        this._zone.run(() => {
+          observer.next(ev);
+          if (ev.stage === 'DONE') {
+            end();
+            observer.complete();
+          }
+        });
+      };
+
+      eventSource.onmessage = (event: MessageEvent) => {
+        try {
+          parseAndEmit(event.data);
+        } catch (e) {
+          this._zone.run(() => {
+            end();
+            observer.error(e);
+          });
+        }
+      };
+
+      eventSource.onerror = () => {
+        this._zone.run(() => {
+          if (finished) {
+            return;
+          }
+          end();
+          observer.error(new Error('EventSource connection error'));
+        });
+      };
+
+      const postSub = this.http.post(postUrl, payload, {
+        observe: 'response',
+        responseType: 'text',
+        headers
+      }).subscribe({
+        error: (err: HttpErrorResponse) => {
+          this._zone.run(() => {
+            end();
+            observer.error(err);
+          });
+        }
+      });
+
+      return () => {
+        end();
+        postSub.unsubscribe();
+      };
     });
+  }
+
+  getExecutable(compilerId: string): Observable<Blob> {
+    if(compilerId.trim().length <= 0) {
+      return throwError(() => new Error("Missing id"));
+    }
+
+    const url = `${environment.backendUrl}compiler/j/${compilerId}`
+
+    return this.http.get(url, {responseType: "blob"}).pipe(
+      catchError(error => {
+        return throwError(() => new Error(error.message));
+      }) 
+    )
+
+
   }
 
   private getBytes(files: IdeFile[]): number {

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EditorPanel } from './editor-panel';
+import { EditorPanel } from './editor-panel.component';
 
 describe('EditorPanel', () => {
   let component: EditorPanel;
