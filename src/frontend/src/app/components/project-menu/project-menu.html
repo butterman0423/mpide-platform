@@ -30,7 +30,7 @@
   />
 }
   @if(isProjectOpen()) {
-    <app-project-modal (closed)="isProjectOpen.set(false)" />
+    <app-project-modal (closed)="isProjectOpen.set(false)" (projectSelected)="projectSelected.emit($event)"/>
   }
   
   @if (WarningModal()) {

@@ -69,7 +69,7 @@ export class EditorPanel implements OnInit, OnDestroy {
     this.fileCompilerService.requestCompiler().subscribe({
       next: (id) => {
         this.compilerId = id;
-        console.log("request success");
+        alert("request success");
       },
       error: (err) => console.log(err)
     });

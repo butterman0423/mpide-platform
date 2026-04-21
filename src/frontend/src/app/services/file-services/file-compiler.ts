@@ -75,17 +75,20 @@ export class FileCompilerService {
     }
 
     const payload: ProjectFile[] = nonEmptyFiles
-      .filter((f): f is IdeFile & { fileLink: string } => f.fileLink !== null)
       .map(f => {
         const dotIndex = f.fileName.lastIndexOf('.');
         const fileName = dotIndex !== -1 ? f.fileName.substring(0, dotIndex) : f.fileName;
-        const extension = dotIndex !== -1 ? f.fileName.substring(dotIndex) : '.c';
+        const extension = dotIndex !== -1 ? f.fileName.substring(dotIndex).toLowerCase() : '.c';
         return {
           file_name: fileName,
           extension: extension,
           content: f.fileContent
         };
       });
+
+    if (payload.length === 0) {
+      return throwError(() => new Error("No valid files to compile."));
+    }
 
     const postUrl = `${environment.backendUrl}compiler/j/${id}`;
     const sseUrl = `${environment.backendUrl}compiler/poll?id=${encodeURIComponent(id)}`;
@@ -153,6 +156,22 @@ export class FileCompilerService {
         postSub.unsubscribe();
       };
     });
+  }
+
+  getExecutable(compilerId: string): Observable<Blob> {
+    if(compilerId.trim().length <= 0) {
+      return throwError(() => new Error("Missing id"));
+    }
+
+    const url = `${environment.backendUrl}compiler/j/${compilerId}`
+
+    return this.http.get(url, {responseType: "blob"}).pipe(
+      catchError(error => {
+        return throwError(() => new Error(error.message));
+      }) 
+    )
+
+
   }
 
   private getBytes(files: IdeFile[]): number {

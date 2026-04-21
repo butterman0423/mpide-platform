@@ -10,6 +10,7 @@ import { FileSelection } from '../../services/file-services/file-selection';
 })
 export class ProjectModal implements OnInit {
   closed = output<void>();
+  projectSelected = output<string>();
 
   opfsService = inject(OpfsService);
   fileSelectionService = inject(FileSelection);
@@ -37,5 +38,6 @@ export class ProjectModal implements OnInit {
 
     this.opfsService.selectProject(this.selectedProject()!);
     this.closed.emit();
+    this.projectSelected.emit(this.selectedProject()!);
   }
 }

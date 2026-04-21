@@ -35,13 +35,26 @@ export class App implements OnDestroy{
     this.activeProjectName.set(newName);
   }
 
+  handleSelectedProject(projectName: string){
+    this.activeProjectName.set(projectName);
+    this.consoleMsgs.set([]);
+  }
+
   handleExecute(compilerId: string) {
     if (this.isExecuting) {
       return
     }
     this.isExecuting = true;
-    this.consoleMsgs.set([]);
-
+    this.consoleMsgs.set([
+      {
+        ty: 'LOG',
+        dat: {
+          ty: "SYSTEM",
+          msg: "Compiling project..."
+        },
+      }
+  ]);
+    let failed = false;
     this.sseSubscription = this.fileCompileService.submitFiles(compilerId).subscribe({
       next: (event: CompileStreamEvent) => {
         const row: MessageData = {
@@ -52,6 +65,9 @@ export class App implements OnDestroy{
             is_error: event.is_error,
           },
         };
+        if(event.is_error){
+          failed = true;
+        }
         this.consoleMsgs.update((msgs) => [...msgs, row]);
       },
       error: () => {
@@ -59,10 +75,59 @@ export class App implements OnDestroy{
       },
       complete: () => {
         this.stopListening();
+
+        if(!failed){
+          this.getExecutable(compilerId);
+        }
       },
     });
   }
 
+  private async getExecutable(compilerId: string) {
+            this.consoleMsgs.update((msgs) => 
+          [
+            ...msgs,
+            {
+              ty: 'LOG',
+              dat: {
+                ty: "SYSTEM",
+                msg: "Retrieving executable..."
+              },
+            }
+          ]
+        )
+    this.fileCompileService.getExecutable(compilerId).subscribe({
+      next: (blob: Blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Path = reader.result as string;
+          try {
+            localStorage.setItem(`${this.activeProjectName()}_executable`, base64Path);
+          } catch (e) {
+            console.error(e);
+          }
+        };
+        reader.readAsDataURL(blob);
+      },
+      error: (err) => {
+        console.log(err);
+      },
+      complete: () => {
+        this.consoleMsgs.update((msgs) => 
+          [
+            ...msgs,
+            {
+              ty: 'LOG',
+              dat: {
+                ty: "SYSTEM",
+                msg: "Successfully retrieved executable"
+              },
+            }
+          ]
+        )
+      }
+    });
+  }
   private stopListening() {
     this.sseSubscription?.unsubscribe();
     this.isExecuting = false;
