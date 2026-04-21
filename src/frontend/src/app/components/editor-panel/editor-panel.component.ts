@@ -52,7 +52,7 @@ export class EditorPanel implements OnInit, OnDestroy {
     })
 
     effect(() => {
-      const fileList = this.fileStoreService.fileList();
+      this.fileStoreService.fileList();
       // If fileList is updated in anyway, revoke compiler Id request
       untracked(() => {
       this.compilerId = undefined;
