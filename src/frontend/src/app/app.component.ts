@@ -9,7 +9,7 @@ import { OpfsService } from './services/opfs';
 import { FileStoreService } from './services/file-services/file-store';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FormsModule } from '@angular/forms';
-
+import { BoardService } from './services/board-services/board';
 
 @Component({
   selector: 'app-root',
@@ -21,10 +21,12 @@ export class App implements OnDestroy{
   protected readonly title = signal('mpide-frontend');
   protected activeProjectName = signal("Untitled Project");
   protected consoleMsgs = signal<MessageData[]>([]);
+  private compiledExecutable = signal<Uint8Array | null>(null);
 
   private isExecuting = false;
   private sseSubscription?: Subscription;
   private fileCompileService = inject(FileCompilerService)
+  private boardService = inject(BoardService)
 
   fileStoreService = inject(FileStoreService);
   opfsService = inject(OpfsService);
@@ -40,7 +42,7 @@ export class App implements OnDestroy{
     this.consoleMsgs.set([]);
   }
 
-  handleExecute(compilerId: string) {
+  handleCompile(compilerId: string) {
     if (this.isExecuting) {
       return
     }
@@ -54,7 +56,6 @@ export class App implements OnDestroy{
         },
       }
   ]);
-    let failed = false;
     this.sseSubscription = this.fileCompileService.submitFiles(compilerId).subscribe({
       next: (event: CompileStreamEvent) => {
         const row: MessageData = {
@@ -65,9 +66,6 @@ export class App implements OnDestroy{
             is_error: event.is_error,
           },
         };
-        if(event.is_error){
-          failed = true;
-        }
         this.consoleMsgs.update((msgs) => [...msgs, row]);
       },
       error: () => {
@@ -75,12 +73,15 @@ export class App implements OnDestroy{
       },
       complete: () => {
         this.stopListening();
-
-        if(!failed){
-          this.getExecutable(compilerId);
-        }
       },
     });
+  }
+
+  handleExecute(compilerId: string) {
+    if (this.isExecuting) {
+      return;
+    }
+    this.getExecutable(compilerId);
   }
 
   private async getExecutable(compilerId: string) {
@@ -97,17 +98,14 @@ export class App implements OnDestroy{
           ]
         )
     this.fileCompileService.getExecutable(compilerId).subscribe({
-      next: (blob: Blob) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64Path = reader.result as string;
-          try {
-            localStorage.setItem(`${this.activeProjectName()}_executable`, base64Path);
-          } catch (e) {
-            console.error(e);
-          }
-        };
-        reader.readAsDataURL(blob);
+      next: async (blob: Blob) => {
+        try {
+          const binary = await blob.arrayBuffer();
+          this.compiledExecutable.set(new Uint8Array(binary));
+          await this.boardService.uploadExecutable(binary);
+        } catch (e) {
+          console.error('Failed to upload executable to board:', e);
+        }
       },
       error: (err) => {
         console.log(err);

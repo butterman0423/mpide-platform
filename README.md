@@ -40,7 +40,7 @@ docker compose up -d
 Then, start the frontend server.
 ```bash
 cd /path/to/mpide-platform
-cd src/mpide-frontend
+cd src/frontend
 npm install
 npm run start
 ```

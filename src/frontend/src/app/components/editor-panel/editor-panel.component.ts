@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, inject, effect, OnInit, OnDestroy, output, untracked } from '@angular/core';
+import { Component, PLATFORM_ID, inject, effect, OnInit, OnDestroy, output } from '@angular/core';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
 import { EventService } from '../../services/event-services/event-service';
 import { FileCompilerService } from '../../services/file-services/file-compiler';
 import { FileStoreService } from '../../services/file-services/file-store';
+import { BoardService } from '../../services/board-services/board';
 
 @Component({
   selector: 'app-editor-panel',
@@ -26,9 +27,11 @@ export class EditorPanel implements OnInit, OnDestroy {
   public fileCompilerService = inject(FileCompilerService);
   private eventService = inject(EventService);
   public fileStoreService = inject(FileStoreService);
+  private boardService = inject(BoardService);
 
   private compilerId: string | undefined;
 
+  compileRequest = output<string>();
   executeRequest = output<string>();
   
   ngOnInit(): void {
@@ -51,13 +54,6 @@ export class EditorPanel implements OnInit, OnDestroy {
       }
     })
 
-    effect(() => {
-      this.fileStoreService.fileList();
-      // If fileList is updated in anyway, revoke compiler Id request
-      untracked(() => {
-      this.compilerId = undefined;
-    });
-    })
   }
 
   handleDelete(){
@@ -66,16 +62,33 @@ export class EditorPanel implements OnInit, OnDestroy {
   }
 
   handleCompilerRequest(){
+    if (!this.boardService.connectedBoard()) {
+      console.error('Cannot compile: no connected Arduino board.');
+      alert("Connect an Arduino board first.");
+      return;
+    }
+
     this.fileCompilerService.requestCompiler().subscribe({
       next: (id) => {
+        if (!id || id.trim().length === 0) {
+          this.compilerId = undefined;
+          alert("Failed to request compiler. Make sure backend/compiler services are running.");
+          return;
+        }
         this.compilerId = id;
-        alert("request success");
+        this.compileRequest.emit(this.compilerId);
       },
       error: (err) => console.log(err)
     });
   }
 
   handleExecuteRequest() {
+    if (!this.boardService.connectedBoard()) {
+      console.error('Cannot execute: no connected Arduino board.');
+      alert("Connect an Arduino board first.");
+      return;
+    }
+
     if(!this.compilerId || this.compilerId.trim().length <= 0){
       alert("Request to compile first.");
       return;
@@ -85,6 +98,7 @@ export class EditorPanel implements OnInit, OnDestroy {
   }
 
   onCodeChange(newCode: string) {
+    this.compilerId = undefined;
     this.fileSelectionService.updateSelectedFileContent(newCode);
   }
 }
