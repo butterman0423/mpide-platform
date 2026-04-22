@@ -79,7 +79,7 @@ export class EditorPanel implements OnInit, OnDestroy {
 
   handleExecuteRequest() {
     if(!this.compilerId || this.compilerId.trim().length <= 0){
-      this.notificationService.show("Request to compile first", "SUCCESS");
+      this.notificationService.show("Request to compile first", "ERROR");
       return;
     }
 
