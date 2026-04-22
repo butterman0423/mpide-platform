@@ -7,6 +7,7 @@ import { OpfsService } from "../../services/opfs";
 import { FileStoreService } from "../../services/file-services/file-store";
 import { ProjectModal } from "../project-modal/project-modal";
 import { FileSelection } from "../../services/file-services/file-selection";
+import { NotificationService } from "../../services/event-services/notification-services";
 
 @Component({
     selector: 'app-project-menu',
@@ -36,14 +37,16 @@ import { FileSelection } from "../../services/file-services/file-selection";
 
     private opfsService = inject(OpfsService);
     private fileService = inject(FileStoreService);
+    private notificationService = inject(NotificationService);
     public projectList: string[] = [];
     public isProjectOpen = signal<boolean>(false);
 
     public WarningModal = signal<boolean>(false);
     public ActionRemember = ""; 
 
-    public showSuccessModal = signal<boolean>(false);
     public successMessage = "";
+
+    
 
     @HostListener('window:beforeunload', ['$event'])
     unloadNotification($event: BeforeUnloadEvent): void {
@@ -95,11 +98,11 @@ import { FileSelection } from "../../services/file-services/file-selection";
             await this.opfsService.saveProject(this.fileService.projectName(), this.fileService.fileList());
             // alert("Project saved successfully!");
             this.successMessage = "Project saved successfully!";
-            this.showSuccessModal.set(true);
+            this.notificationService.show("Project saved successfully!", "SUCCESS");
         } catch (err) {
             // alert(err instanceof Error ? err.message : "An unknown error occurred.");
-            this.successMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-            this.showSuccessModal.set(true);
+            const errMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+            this.notificationService.show(errMessage, "ERROR");
         }
     }
 
@@ -129,11 +132,6 @@ import { FileSelection } from "../../services/file-services/file-selection";
         this.ActionRemember = "";
     }
 
-    closeSuccessModal() {
-        this.showSuccessModal.set(false);
-        this.successMessage = "";
-    }
-
     async confirmWarn() {
         if (this.ActionRemember === "new"){
             this.showNewProjectModal.set(true);
@@ -144,9 +142,9 @@ import { FileSelection } from "../../services/file-services/file-selection";
         else if (this.ActionRemember === "delete"){
             await this.opfsService.deleteProject();
             this.fileSelectionService.clearFile();
-            // alert("Project deleted successfully!");
-            this.successMessage = "Project deleted successfully!";
-            this.showSuccessModal.set(true);
+
+            this.notificationService.show("Project deleted successfully!", "SUCCESS");
+
         }
 
         this.closeWarningModal();

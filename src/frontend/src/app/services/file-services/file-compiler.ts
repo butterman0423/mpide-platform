@@ -37,7 +37,6 @@ export class FileCompilerService {
     const nonEmptyFiles = fileList.filter(f => f.fileContent.trim().length > 0);
 
     if (nonEmptyFiles.length === 0) {
-      alert("No files with content to compile.");
       return throwError(() => new Error("No files with content to compile."));
     }
 

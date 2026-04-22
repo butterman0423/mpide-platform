@@ -9,11 +9,13 @@ import { OpfsService } from './services/opfs';
 import { FileStoreService } from './services/file-services/file-store';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FormsModule } from '@angular/forms';
+import { NotificationComponent } from './components/notification/notification.component';
+import { NotificationService } from './services/event-services/notification-services';
 
 
 @Component({
   selector: 'app-root',
-  imports: [FileManagementComponent, EditorPanel, Console, ProjectMenuComponent, FormsModule, NzIconModule],
+  imports: [FileManagementComponent, EditorPanel, Console, ProjectMenuComponent, NotificationComponent, FormsModule, NzIconModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -25,6 +27,7 @@ export class App implements OnDestroy{
   private isExecuting = false;
   private sseSubscription?: Subscription;
   private fileCompileService = inject(FileCompilerService)
+  private notificationService = inject(NotificationService)
 
   fileStoreService = inject(FileStoreService);
   opfsService = inject(OpfsService);
@@ -141,11 +144,11 @@ export class App implements OnDestroy{
   async acceptRename(){
     const projects = await this.opfsService.getProjects();
     if (projects.includes(this.renamedProject)){
-      alert("Project with that name already exists");
+      this.notificationService.show("Project with that name already exists", "ERROR");
       return;
     }
     else if (this.renamedProject.trim() === ""){
-      alert("Project name cannot be empty");
+      this.notificationService.show("Project name cannot be empty", "ERROR");
       return;
     }
     else{

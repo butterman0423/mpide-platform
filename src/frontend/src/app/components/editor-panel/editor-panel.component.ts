@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
 import { EventService } from '../../services/event-services/event-service';
 import { FileCompilerService } from '../../services/file-services/file-compiler';
 import { FileStoreService } from '../../services/file-services/file-store';
+import { NotificationService } from '../../services/event-services/notification-services';
 
 @Component({
   selector: 'app-editor-panel',
@@ -26,6 +27,7 @@ export class EditorPanel implements OnInit, OnDestroy {
   public fileCompilerService = inject(FileCompilerService);
   private eventService = inject(EventService);
   public fileStoreService = inject(FileStoreService);
+  private notificationService = inject(NotificationService);
 
   private compilerId: string | undefined;
 
@@ -68,16 +70,16 @@ export class EditorPanel implements OnInit, OnDestroy {
   handleCompilerRequest(){
     this.fileCompilerService.requestCompiler().subscribe({
       next: (id) => {
+        this.notificationService.show("Compiler request is successful", "SUCCESS");
         this.compilerId = id;
-        alert("request success");
       },
-      error: (err) => console.log(err)
+      error: (err) => this.notificationService.show(err, "ERROR")
     });
   }
 
   handleExecuteRequest() {
     if(!this.compilerId || this.compilerId.trim().length <= 0){
-      alert("Request to compile first.");
+      this.notificationService.show("Request to compile first", "SUCCESS");
       return;
     }
 
