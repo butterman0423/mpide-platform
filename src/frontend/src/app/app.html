@@ -1,13 +1,9 @@
 <div class="flex flex-col h-screen overflow-hidden">
-  <!-- Top Navbar -->
+  <app-notification />
+  <!-- Top Navbar -->   
   <div class="flex items-center justify-between px-4 bg-[#0F172A] border-b border-[#1E293B] h-[5vh] min-h-[40px]">
     <div class="flex items-center gap-3">
       <app-project-menu (projectCreated)="handleProjectCreated($event)" (projectSelected)="handleSelectedProject($event)"/>
-      <!-- <button class="text-xs px-3 py-1 bg-[#1890FF] text-white rounded hover:bg-[#475569] flex flex-row items-center justify-center gap-1">
-        Project
-        <nz-icon nzType="caret-down" nzTheme="outline" />
-      </button> -->
-
       @if(fileStoreService.projectNameIsBeingEdited()){
         <div class="flex items-center gap-1.5 w-full">
           <input
