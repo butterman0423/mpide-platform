@@ -1,0 +1,14 @@
+@if(this.currentNotification){
+    <div class="flex flex-row gap-1 items-center justify-center toast" 
+    [class.SUCCESS]="currentNotification.ty === 'SUCCESS'"
+    [class.ERROR]="currentNotification.ty === 'ERROR'"
+    >
+        @if(this.currentNotification.ty === "SUCCESS") {
+            <nz-icon nzType="check-circle" nzTheme="outline" />
+        }
+        @else{
+            <nz-icon nzType="close-circle" nzTheme="outline" />
+        }
+        {{ currentNotification.message }}
+    </div>
+}

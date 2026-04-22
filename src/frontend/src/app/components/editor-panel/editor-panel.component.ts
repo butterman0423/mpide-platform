@@ -10,6 +10,7 @@ import { EventService } from '../../services/event-services/event-service';
 import { FileCompilerService } from '../../services/file-services/file-compiler';
 import { FileStoreService } from '../../services/file-services/file-store';
 import { BoardService } from '../../services/board-services/board';
+import { NotificationService } from '../../services/event-services/notification-services';
 
 @Component({
   selector: 'app-editor-panel',
@@ -28,6 +29,7 @@ export class EditorPanel implements OnInit, OnDestroy {
   private eventService = inject(EventService);
   public fileStoreService = inject(FileStoreService);
   private boardService = inject(BoardService);
+  private notificationService = inject(NotificationService);
 
   private compilerId: string | undefined;
 
@@ -64,7 +66,7 @@ export class EditorPanel implements OnInit, OnDestroy {
   handleCompilerRequest(){
     if (!this.boardService.connectedBoard()) {
       console.error('Cannot compile: no connected Arduino board.');
-      alert("Connect an Arduino board first.");
+      this.notificationService.show('Connect an Arduino board first.', 'ERROR');
       return;
     }
 
@@ -72,25 +74,25 @@ export class EditorPanel implements OnInit, OnDestroy {
       next: (id) => {
         if (!id || id.trim().length === 0) {
           this.compilerId = undefined;
-          alert("Failed to request compiler. Make sure backend/compiler services are running.");
+          this.notificationService.show('Failed to request compiler. Make sure backend/compiler services are running.', 'ERROR');
           return;
         }
         this.compilerId = id;
         this.compileRequest.emit(this.compilerId);
       },
-      error: (err) => console.log(err)
+      error: () => this.notificationService.show('Failed to request compiler. Make sure backend/compiler services are running.', 'ERROR')
     });
   }
 
   handleExecuteRequest() {
     if (!this.boardService.connectedBoard()) {
       console.error('Cannot execute: no connected Arduino board.');
-      alert("Connect an Arduino board first.");
+      this.notificationService.show('Connect an Arduino board first.', 'ERROR');
       return;
     }
 
     if(!this.compilerId || this.compilerId.trim().length <= 0){
-      alert("Request to compile first.");
+      this.notificationService.show('Request to compile first.', 'ERROR');
       return;
     }
 

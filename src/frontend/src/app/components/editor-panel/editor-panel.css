@@ -1,0 +1,11 @@
+/* 1. Override the default 200px height on the host element */
+ngx-monaco-editor {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* 2. Force Monaco's internal DOM wrapper to fill that new space */
+::ng-deep ngx-monaco-editor .editor-container {
+  height: 100% !important;
+  width: 100% !important;
+}
