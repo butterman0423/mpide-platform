@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@types/google.picker": "^0.0.52"
+  }
+}

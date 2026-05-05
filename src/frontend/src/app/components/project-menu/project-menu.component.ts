@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, output, signal } from "@angular/core";
+import { Component, HostListener, inject, output, signal, ViewChild } from "@angular/core";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { NzDropdownModule } from 'ng-zorro-antd/dropdown';
 import { NewProjectModalComponent } from "../new-project/new-project-modal.component";
@@ -8,14 +8,16 @@ import { FileStoreService } from "../../services/file-services/file-store";
 import { ProjectModal } from "../project-modal/project-modal";
 import { FileSelection } from "../../services/file-services/file-selection";
 import { NotificationService } from "../../services/event-services/notification-services";
+import { ImportModalComponent } from "../import-google-drive/import-google-drive.component";
 
 @Component({
     selector: 'app-project-menu',
-    imports: [NzIconModule, NzDropdownModule, ProjectModal, NewProjectModalComponent],
+    imports: [NzIconModule, NzDropdownModule, ProjectModal, NewProjectModalComponent, ImportModalComponent],
     templateUrl: './project-menu.html',
     styleUrl: './project-menu.css'
   })
   export class ProjectMenuComponent {
+    @ViewChild('importDriveModal') importDriveModal!: ImportModalComponent;
     private projectService = inject(ProjectDropDownService);
     public fileStoreList = inject(FileStoreService);
     public fileSelectionService = inject(FileSelection);
@@ -26,9 +28,11 @@ import { NotificationService } from "../../services/event-services/notification-
     protected projectNames = signal<string[]>(["Untitled Project"]);
     // protected currentProjectName = signal("Untitled Project");
 
+
     protected options = [
         { label: "New Project",  action: () => this.handleNewProject(), icon: `plus` },
         { label: "Open Project", action: () => this.handleOpenProject(),icon: `folder-open` },
+        { label: "Import from Drive", action: () => this.handleImport(), icon: `google`},
         { label: "Save",         action: () => this.handleSave(),       icon: `save` },
         { label: "Rename",       action: () => this.handleRename(),     icon: `highlight` },
         { label: "Export",       action: () => this.handleExport(),     icon: `export`},
@@ -55,6 +59,11 @@ import { NotificationService } from "../../services/event-services/notification-
 
     handleNewProject(){
         this.ActionRemember = "new";
+        this.WarningModal.set(true);
+    }
+
+    handleImport() {
+        this.ActionRemember = "import";
         this.WarningModal.set(true);
     }
 
@@ -144,7 +153,9 @@ import { NotificationService } from "../../services/event-services/notification-
             this.fileSelectionService.clearFile();
 
             this.notificationService.show("Project deleted successfully!", "SUCCESS");
-
+        }
+        else if (this.ActionRemember === "import"){
+            this.importDriveModal.openModal();
         }
 
         this.closeWarningModal();
