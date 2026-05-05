@@ -36,6 +36,7 @@
     "@angular/ssr": "^21.1.5",
     "@ant-design/icons-angular": "^21.0.0",
     "@fontsource/fira-code": "^5.2.7",
+    "@types/dom-serial": "^1.0.6",
     "@types/google.accounts": "^0.0.18",
     "express": "^5.1.0",
     "jszip": "^3.10.1",
