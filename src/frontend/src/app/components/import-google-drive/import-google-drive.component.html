@@ -1,0 +1,58 @@
+@if (showModal()) {
+  <div class="modal-overlay"
+    role="button"
+    tabindex="0"
+    (mousedown)="closeModal()"
+    (keydown.enter)="closeModal()"
+    (window:keydown.escape)="closeModal()">
+    
+    <div class="modal"
+      (mousedown)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="import-modal-title">
+      
+      <div class="modal-header">
+        <h2 id="import-modal-title">Import from Google Drive</h2>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <span class="modal-label" style="font-size: 14px; color: #fff;">
+          Select a project directory
+        </span>
+
+        <div class="device-card"
+          (click)="triggerGooglePicker()"
+          (keydown.enter)="triggerGooglePicker()"
+          tabindex="0"
+          role="button">
+          <div class="device-info">
+            <span class="device-name">Open Google Drive</span>
+            <span class="device-status">Select a folder containing .c, .cpp, or .h files</span>
+          </div>
+        </div>
+
+        @if (selectedFolderId()) {
+          <div class="device-card selected" style="cursor: default; margin-top: 8px;">
+            <div class="device-info">
+              <span class="device-name">{{ selectedFolderName() }}</span>
+              <span class="device-status" style="color: #4caf50;">Ready to import</span>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <div class="modal-footer">
+        <div class="footer-right">
+          <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+          <button class="btn-connect" 
+            [disabled]="!selectedFolderId() || isLoading()" 
+            (click)="confirmImport()">
+            {{ isLoading() ? 'Importing...' : 'Import Files' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

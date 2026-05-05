@@ -8,7 +8,10 @@
     "types": [
       "node",
       "w3c-web-usb",
-      "google.accounts"
+      "google.accounts",
+      "google.picker",
+      "gapi",             
+      "gapi.client.drive"
     ]
   },
   "include": [
