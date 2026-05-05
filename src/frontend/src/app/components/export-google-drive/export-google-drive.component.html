@@ -1,0 +1,99 @@
+@if (showModal()) {
+  <div class="modal-overlay" role="button" tabindex="0" (mousedown)="closeModal()" (keydown.escape)="closeModal()">
+    <div class="modal" (mousedown)="$event.stopPropagation()" role="dialog">
+      
+      <div class="modal-header">
+        <h2>Export Project</h2>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        @if (error()) {
+          <div style="color: #f87171; font-size: 13px;">{{ error() }}</div>
+        }
+
+        @if (view() === 'selection') {
+          <span class="modal-label">Select Export Destination</span>
+          
+          <div class="option-card" 
+               [class.selected]="exportType() === 'zip'" 
+               (click)="selectType('zip')"
+               (keydown.enter)="selectType('zip')"
+               tabindex="0"
+               role="button">
+            <div class="device-info">
+              <span class="device-name">📦 Export as ZIP</span>
+              <span class="device-status">Download a compressed archive to your computer</span>
+            </div>
+          </div>
+
+          <div class="option-card" 
+               [class.selected]="exportType() === 'gdrive'" 
+               (click)="selectType('gdrive')"
+               (keydown.enter)="selectType('gdrive')"
+               tabindex="0"
+               role="button">
+            <div class="device-info">
+              <span class="device-name">☁️ Export to Google Drive</span>
+              <span class="device-status">Upload files to Google Drive</span>
+            </div>
+          </div>
+
+          @if (exportType() === 'gdrive') {
+            <div class="device-card" 
+                 style="margin-top: 12px;" 
+                 (click)="triggerGooglePicker()" 
+                 (keydown.enter)="triggerGooglePicker()"
+                 tabindex="0"
+                 role="button">
+              <div class="device-info">
+                <span class="device-name">Select Drive Location</span>
+                <span class="device-status">Choose where to save these files</span>
+              </div>
+            </div>
+
+            @if (selectedFolderId()) {
+              <div class="device-card selected" style="cursor: default; margin-top: 8px;">
+                <div class="device-info">
+                  <span class="device-name">{{ selectedFolderName() }}</span>
+                  <span class="device-status" style="color: #4caf50;">Ready to upload</span>
+                </div>
+              </div>
+            }
+          }
+
+        } @else if (view() === 'conflict') {
+          <span class="modal-label" style="color: #f87171; font-weight: 500;">
+            Warning: The following files already exist in this location and will be overwritten.
+          </span>
+          
+          <div class="conflict-list">
+            @for (file of conflictingFiles(); track file) {
+              <div class="conflict-item">⚠️ {{file}}</div>
+            }
+          </div>
+        }
+      </div>
+      
+      <div class="modal-footer">
+        <div class="footer-right">
+          <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+          
+          @if (view() === 'selection') {
+            <button class="btn-connect" 
+              [disabled]="isLoading() || (exportType() === 'gdrive' && !selectedFolderId())" 
+              (click)="confirmSelection()">
+              {{ isLoading() ? 'Scanning...':'Confirm' }}
+            </button>
+          } @else {
+            <button class="btn-connect" style="background: #b91c1c;" 
+              [disabled]="isLoading()" 
+              (click)="executeUpload()">
+              {{ isLoading() ? 'Uploading...':'Overwrite Files' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

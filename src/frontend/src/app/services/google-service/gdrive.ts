@@ -27,7 +27,7 @@ export class GDriveService {
             const { google, gapi } = e.currentTarget as unknown as GApiWindow;
             this.tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: environment.googleApiClientId,
-                scope: ["https://www.googleapis.com/auth/drive.readonly"].join(" "),
+                scope: ["https://www.googleapis.com/auth/drive.readonly", "https://www.googleapis.com/auth/drive.file"].join(" "),
                 callback: (resp: TokenResponse) => {
                     this._handleTokenResponse(resp);
 
@@ -132,5 +132,58 @@ export class GDriveService {
         }
 
         return loadedFiles;
+    }
+
+    public async getFilesInFolder(folderId: string): Promise<{id: string, name: string}[]> {
+        if (!this.accessToken) throw new Error("Not authenticated");
+        const { gapi } = this.document.defaultView as unknown as GApiWindow;
+
+        const response = await gapi.client.drive.files.list({
+            q: `'${folderId}' in parents and trashed = false`,
+            fields: 'files(id, name)',
+            spaces: 'drive'
+        });
+
+        const rawFiles = response.result.files || [];
+        return rawFiles.map(f => ({
+            id: f.id || '',
+            name: f.name || 'Unknown_File'
+        }));
+    }
+
+    public async exportProjectFiles(folderId: string, filesToExport: {name: string, content: string}[]): Promise<void> {
+        if (!this.accessToken) throw new Error("Not authenticated");
+        const { gapi } = this.document.defaultView as unknown as GApiWindow;
+
+        const existingDriveFiles = await this.getFilesInFolder(folderId);
+
+        for (const file of filesToExport) {
+            const existingFile = existingDriveFiles.find(f => f.name === file.name);
+
+            if (existingFile) {
+                await gapi.client.request({
+                    path: `/upload/drive/v3/files/${existingFile.id}`,
+                    method: 'PATCH',
+                    params: { uploadType: 'media' },
+                    body: file.content
+                });
+            } else {
+
+                const metadataResponse = await gapi.client.drive.files.create({
+                    resource: {
+                        name: file.name,
+                        parents: [folderId]
+                    },
+                    fields: 'id'
+                });
+
+                await gapi.client.request({
+                    path: `/upload/drive/v3/files/${metadataResponse.result.id}`,
+                    method: 'PATCH',
+                    params: { uploadType: 'media' },
+                    body: file.content
+                });
+            }
+        }
     }
 }
