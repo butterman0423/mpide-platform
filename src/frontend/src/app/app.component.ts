@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { BoardService } from './services/board-services/board';
 import { NotificationComponent } from './components/notification/notification.component';
 import { NotificationService } from './services/event-services/notification-services';
+import { GDriveService } from './services/google-service/gdrive';
 
 @Component({
   selector: 'app-root',
@@ -30,11 +31,19 @@ export class App implements OnDestroy{
   private fileCompileService = inject(FileCompilerService)
   private boardService = inject(BoardService)
   private notificationService = inject(NotificationService)
+  private gdriveService = inject(GDriveService)
 
   fileStoreService = inject(FileStoreService);
   opfsService = inject(OpfsService);
 
   renamedProject = "";
+
+  // TODO: Remove me and the "Test AUTH" button when 
+  // the other Google Drive API features are added in. 
+  // This is just to test google auth popup and token generation
+  test() {
+    this.gdriveService.requestAuth()
+  }
 
   handleProjectCreated(newName: string){
     this.activeProjectName.set(newName);

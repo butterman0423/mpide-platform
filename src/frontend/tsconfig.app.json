@@ -7,7 +7,8 @@
     "outDir": "./dist",
     "types": [
       "node",
-      "w3c-web-usb"
+      "w3c-web-usb",
+      "google.accounts"
     ]
   },
   "include": [
