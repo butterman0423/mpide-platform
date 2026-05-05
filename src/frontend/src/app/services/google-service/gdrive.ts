@@ -1,4 +1,4 @@
-import { DOCUMENT, Inject, Injectable } from '@angular/core'
+import { DOCUMENT, inject, Injectable } from '@angular/core'
 import { fromEvent } from 'rxjs'
 import { environment } from '../../../environments/environment.development'
 
@@ -15,10 +15,11 @@ interface GApiWindow extends Window {
 export class GDriveService {
     private tokenClient: TokenClient | undefined
     private accessToken: string | undefined
-    private serviceLoaded: boolean = false
+    private serviceLoaded = false
+    private document: Document = inject(DOCUMENT)
 
-    constructor(@Inject(DOCUMENT) document: Document) {
-        fromEvent(document.defaultView as Window, 'load').subscribe((e) => {
+    constructor() {
+        fromEvent(this.document.defaultView as Window, 'load').subscribe((e) => {
             const { google } = e.currentTarget as GApiWindow
             this.tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: environment.googleApiClientId,
