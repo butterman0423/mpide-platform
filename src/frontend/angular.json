@@ -36,7 +36,11 @@
             "outputMode": "server",
             "ssr": {
               "entry": "src/server.ts"
-            }
+            },
+            "polyfills": [
+              "zone.js",
+              "src/polyfill.ts"
+            ]
           },
           "configurations": {
             "production": {

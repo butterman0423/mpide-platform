@@ -3,7 +3,7 @@ import { FileManagementComponent } from "./components/file-management/file-manag
 import { EditorPanel } from './components/editor-panel/editor-panel.component';
 import { Console, MessageData } from "./components/console/console";
 import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
-import { Subscription } from 'rxjs';
+import { catchError, Subscription, throwError } from 'rxjs';
 import { FileCompilerService, CompileStreamEvent } from './services/file-services/file-compiler';
 import { OpfsService } from './services/opfs';
 import { FileStoreService } from './services/file-services/file-store';
@@ -13,6 +13,16 @@ import { BoardService } from './services/board-services/board';
 import { NotificationComponent } from './components/notification/notification.component';
 import { NotificationService } from './services/event-services/notification-services';
 import { GDriveService } from './services/google-service/gdrive';
+import { environment } from '../environments/environment.development';
+import { HttpClient } from '@angular/common/http';
+
+// @ts-expect-error
+import Stk500 from 'stk500'
+
+// @ts-expect-error
+import * as intel_hex from 'intel-hex'
+
+import { ReadableWebToNodeStream } from 'readable-web-to-node-stream'
 
 @Component({
   selector: 'app-root',
@@ -36,6 +46,8 @@ export class App implements OnDestroy{
   fileStoreService = inject(FileStoreService);
   opfsService = inject(OpfsService);
 
+  httpTest = inject(HttpClient)
+
   renamedProject = "";
 
   // TODO: Remove me and the "Test AUTH" button when 
@@ -43,6 +55,68 @@ export class App implements OnDestroy{
   // This is just to test google auth popup and token generation
   test() {
     this.gdriveService.requestAuth()
+  }
+
+  async testSerialUpload() {
+    const device = await navigator.serial.requestPort()
+    await device.open({ baudRate: 115200 })
+
+    // @ts-expect-error
+    globalThis.match = ""
+
+    const stk = new Stk500()
+
+    const opts = {
+      name: "Arduino Uno",
+      baudRate: 115200,
+      signature: new Uint8Array([0x1e, 0x95, 0x0f]),
+      pageSize: 128,
+      timeout: 400,
+    }
+    
+    // Test fetch
+    const url = `${environment.backendUrl}test/led`
+    const obsv = this.httpTest.get(url, { responseType: "blob" }).pipe(
+      catchError(e => throwError(() => {
+        device.close().then(() => device.forget())
+        new Error(e)
+      }))
+    )
+
+    obsv.subscribe({
+      next: async (blob) => {
+        const bin = await blob.text()
+        const { data: hex } = intel_hex.parse(bin)
+
+        const reader = new ReadableWebToNodeStream(device.readable)
+        const writer = device.writable.getWriter()
+        const stream = (reader as unknown) as NodeJS.ReadWriteStream
+
+        // @ts-expect-error
+        stream.write = (buffer: string | Uint8Array, onDone: (err: Error | null | undefined) => void) => {
+          writer!.write(buffer).then(() => onDone(null), onDone)
+          return true
+        }
+
+        console.log("Start write")
+
+        stk.bootload(stream, hex, opts, async (e: Error) => {
+          if (e) {
+            console.error(e)
+          } else {
+            console.log("Done")
+          }
+          
+          //@ts-expect-error
+          await reader.destroy()
+
+          writer.releaseLock()
+
+          await device.close()
+          await device.forget()
+        })
+      }
+    })
   }
 
   handleProjectCreated(newName: string){
