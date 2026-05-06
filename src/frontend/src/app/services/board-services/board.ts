@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { BoardOpts } from '../../types/stk500';
-import { BOARD_OPTIONS, getBoardKey } from './board-opts';
+import { BOARD_IDS, BOARD_OPTIONS, getBoardKey } from './board-opts';
 import { ReadableWebToNodeStream } from 'readable-web-to-node-stream';
 
 // Both libs below only support ES5, so typescript throws errors
@@ -45,9 +45,7 @@ export class BoardService {
 
   async requestNewDevice(): Promise<BoardDevice | null> {
     const device =  await navigator.serial.requestPort({
-      filters: [{
-        usbVendorId: 1027
-      }]
+      filters: BOARD_IDS
     })
 
     const boardKey = getBoardKey(device.getInfo())
