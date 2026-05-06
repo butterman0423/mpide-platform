@@ -16,14 +16,6 @@ import { GDriveService } from './services/google-service/gdrive';
 import { environment } from '../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 
-// @ts-expect-error
-import Stk500 from 'stk500'
-
-// @ts-expect-error
-import * as intel_hex from 'intel-hex'
-
-import { ReadableWebToNodeStream } from 'readable-web-to-node-stream'
-
 @Component({
   selector: 'app-root',
   imports: [FileManagementComponent, EditorPanel, Console, ProjectMenuComponent, NotificationComponent, FormsModule, NzIconModule],
@@ -58,63 +50,17 @@ export class App implements OnDestroy{
   }
 
   async testSerialUpload() {
-    const device = await navigator.serial.requestPort()
-    await device.open({ baudRate: 115200 })
-
-    // @ts-expect-error
-    globalThis.match = ""
-
-    const stk = new Stk500()
-
-    const opts = {
-      name: "Arduino Uno",
-      baudRate: 115200,
-      signature: new Uint8Array([0x1e, 0x95, 0x0f]),
-      pageSize: 128,
-      timeout: 400,
+    if (!this.boardService.connectedBoard()) {
+      console.warn("Connect a board before running the test.")
+      return
     }
-    
-    // Test fetch
+
     const url = `${environment.backendUrl}test/led`
-    const obsv = this.httpTest.get(url, { responseType: "blob" }).pipe(
-      catchError(e => throwError(() => {
-        device.close().then(() => device.forget())
-        new Error(e)
-      }))
-    )
+    const obsv = this.httpTest.get(url, { responseType: "blob" })
 
     obsv.subscribe({
       next: async (blob) => {
-        const bin = await blob.text()
-        const { data: hex } = intel_hex.parse(bin)
-
-        const reader = new ReadableWebToNodeStream(device.readable)
-        const writer = device.writable.getWriter()
-        const stream = (reader as unknown) as NodeJS.ReadWriteStream
-
-        // @ts-expect-error
-        stream.write = (buffer: string | Uint8Array, onDone: (err: Error | null | undefined) => void) => {
-          writer!.write(buffer).then(() => onDone(null), onDone)
-          return true
-        }
-
-        console.log("Start write")
-
-        stk.bootload(stream, hex, opts, async (e: Error) => {
-          if (e) {
-            console.error(e)
-          } else {
-            console.log("Done")
-          }
-          
-          //@ts-expect-error
-          await reader.destroy()
-
-          writer.releaseLock()
-
-          await device.close()
-          await device.forget()
-        })
+        this.boardService.uploadExecutable(blob)
       }
     })
   }
@@ -188,7 +134,7 @@ export class App implements OnDestroy{
         try {
           const binary = await blob.arrayBuffer();
           this.compiledExecutable.set(new Uint8Array(binary));
-          await this.boardService.uploadExecutable(binary);
+          await this.boardService.uploadExecutable(blob);
         } catch (e) {
           console.error('Failed to upload executable to board:', e);
         }
