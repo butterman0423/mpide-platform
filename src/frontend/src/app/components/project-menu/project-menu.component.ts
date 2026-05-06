@@ -9,15 +9,17 @@ import { ProjectModal } from "../project-modal/project-modal";
 import { FileSelection } from "../../services/file-services/file-selection";
 import { NotificationService } from "../../services/event-services/notification-services";
 import { ImportModalComponent } from "../import-google-drive/import-google-drive.component";
+import { ExportModalComponent } from "../export-google-drive/export-google-drive.component";
 
 @Component({
     selector: 'app-project-menu',
-    imports: [NzIconModule, NzDropdownModule, ProjectModal, NewProjectModalComponent, ImportModalComponent],
+    imports: [NzIconModule, NzDropdownModule, ProjectModal, NewProjectModalComponent, ImportModalComponent, ExportModalComponent],
     templateUrl: './project-menu.html',
     styleUrl: './project-menu.css'
   })
   export class ProjectMenuComponent {
     @ViewChild('importDriveModal') importDriveModal!: ImportModalComponent;
+    @ViewChild('exportDriveModal') exportDriveModal!: ExportModalComponent;
     private projectService = inject(ProjectDropDownService);
     public fileStoreList = inject(FileStoreService);
     public fileSelectionService = inject(FileSelection);
@@ -119,7 +121,12 @@ import { ImportModalComponent } from "../import-google-drive/import-google-drive
         this.fileStoreList.projectNameIsBeingEdited.set(true);
     }
 
-    async handleExport(){
+    handleExport(){
+        this.exportDriveModal.openModal();
+    }
+
+
+    async executeZipExport(){
         const zippedFiles: Blob = await this.projectService.exportProject();
 
         const link = document.createElement("a")
