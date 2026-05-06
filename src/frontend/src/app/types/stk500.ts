@@ -1,4 +1,4 @@
-export type BoardOpts = {
+export interface BoardOpts {
     name: string,
     baudRate: number,
     signature: Uint8Array,

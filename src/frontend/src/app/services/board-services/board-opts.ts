@@ -1,10 +1,5 @@
 import type { BoardOpts } from '../../types/stk500'
 
-type BoardId = {
-    usbProductId: number,
-    usbVendorId: number
-}
-
 export function getBoardKey(portId: Partial<SerialPortInfo>): string {
     const { usbProductId, usbVendorId } = portId
     return `${usbProductId}-${usbVendorId}`

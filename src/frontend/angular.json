@@ -39,7 +39,7 @@
             },
             "polyfills": [
               "zone.js",
-              "src/polyfill.ts"
+              "src/polyfill.js"
             ]
           },
           "configurations": {

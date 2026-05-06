@@ -3,7 +3,7 @@ import { FileManagementComponent } from "./components/file-management/file-manag
 import { EditorPanel } from './components/editor-panel/editor-panel.component';
 import { Console, MessageData } from "./components/console/console";
 import { ProjectMenuComponent } from './components/project-menu/project-menu.component';
-import { catchError, Subscription, throwError } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FileCompilerService, CompileStreamEvent } from './services/file-services/file-compiler';
 import { OpfsService } from './services/opfs';
 import { FileStoreService } from './services/file-services/file-store';

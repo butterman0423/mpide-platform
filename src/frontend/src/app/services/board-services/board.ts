@@ -3,11 +3,10 @@ import { BoardOpts } from '../../types/stk500';
 import { BOARD_IDS, BOARD_OPTIONS, getBoardKey } from './board-opts';
 import { ReadableWebToNodeStream } from 'readable-web-to-node-stream';
 
-// Both libs below only support ES5, so typescript throws errors
-// @ts-expect-error
+// @ts-expect-error Libs below only support ES5 with no typing defs, so typescript throws errors
 import Stk500 from 'stk500'
 
-// @ts-expect-error
+// @ts-expect-error Libs below only support ES5 with no typing defs, so typescript throws errors
 import * as intel_hex from 'intel-hex'
 
 // Here are their manual type interfaces
@@ -34,8 +33,7 @@ export class BoardService {
       console.error("WebSerial not found: use a different browser.")
     }
 
-    // stk500 relies on the global variable "match" to be defined.
-    //@ts-ignore
+    //@ts-expect-error stk500 relies on the global variable "match" to be defined.
     global.match = ""
   }
 
@@ -76,7 +74,7 @@ export class BoardService {
     await serial.open({ baudRate: opts.baudRate })
 
     this.connectedBoard.set(device)
-    serial.addEventListener("disconnect", (_) => {
+    serial.addEventListener("disconnect", () => {
       this.disconnect()
     }, { once: true })
   }
@@ -119,7 +117,7 @@ export class BoardService {
     // Credit: https://github.com/dbuezas/arduino-web-uploader/tree/master
     const stream = (reader as unknown) as NodeJS.ReadWriteStream
 
-    // @ts-expect-error
+    // @ts-expect-error The below definition does not match NodeJS.ReadWriteStream, but needed for WebSerial conversion
     stream.write = (buffer: string | Uint8Array, onDone: (err: Error | null | undefined) => void) => {
       writer!.write(buffer).then(() => onDone(null), onDone)
       return true
