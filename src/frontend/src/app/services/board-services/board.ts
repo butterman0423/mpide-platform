@@ -24,7 +24,6 @@ export interface BoardDevice {
 @Injectable({ providedIn: 'root' })
 export class BoardService {
   readonly ARDUINO_VENDOR_ID = 0x2341;
-  private stk500: Stk500_t = new Stk500()
 
   connectedBoard = signal<BoardDevice | null>(null);
   availableDevices = signal<BoardDevice[]>([]);
@@ -72,8 +71,7 @@ export class BoardService {
   }
 
   async connect(device: BoardDevice): Promise<void> {
-    const { opts, device: serial } = device
-    await serial.open({ baudRate: opts.baudRate })
+    const { device: serial } = device
 
     this.connectedBoard.set(device)
     serial.addEventListener("disconnect", () => {
@@ -87,18 +85,6 @@ export class BoardService {
 
     this.connectedBoard.set(null);
     const { device } = pboard;
-
-    // Force unlocks if needed:
-    if (device.writable && device.writable.locked) {
-      await device.writable.abort()
-      await device.writable.close()
-    }
-
-    if (device.readable && device.readable.locked) {
-      await device.readable.cancel()
-    }
-
-    await device.close();
     await device.forget();
   }
 
@@ -109,8 +95,14 @@ export class BoardService {
     }
 
     const { opts, device } = board
+
+    // Note: the open call has to be here for some reason
+    await device.open({ baudRate: opts.baudRate })
+
     const bin = await blob.text()
     const { data: hex } = (intel_hex as intel_hex_t).parse(bin)
+
+    const stk500: Stk500_t = new Stk500()
 
     const reader = new ReadableWebToNodeStream(device.readable)
     const writer = device.writable.getWriter()
@@ -125,7 +117,7 @@ export class BoardService {
       return true
     }
 
-    this.stk500.bootload(stream, hex, opts, (e) => {
+    stk500.bootload(stream, hex, opts, (e) => {
       // Propagate any errors
       if (e) throw e
     })
