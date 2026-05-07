@@ -117,9 +117,13 @@ export class BoardService {
       return true
     }
 
-    stk500.bootload(stream, hex, opts, (e) => {
+    stk500.bootload(stream, hex, opts, async (e) => {
       // Propagate any errors
       if (e) throw e
+
+      reader._destroy(null, () => {})
+      writer.releaseLock()
+      await device.close()
     })
   }
 }
