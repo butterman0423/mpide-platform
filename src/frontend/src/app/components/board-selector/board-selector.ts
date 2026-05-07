@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BoardService } from '../../services/board-services/board';
+import { BoardDevice, BoardService } from '../../services/board-services/board';
 
 @Component({
   selector: 'app-board-selector',
@@ -12,12 +12,12 @@ import { BoardService } from '../../services/board-services/board';
 export class BoardSelectorComponent {
   boardService = inject(BoardService);
   showModal = signal(false);
-  selectedDevice = signal<USBDevice | null>(null);
+  selectedDevice = signal<BoardDevice | null>(null);
   error = signal<string | null>(null);
 
   async openModal() {
     this.error.set(null);
-    await this.boardService.refreshDevices();
+    //await this.boardService.refreshDevices();
     const devices = this.boardService.availableDevices();
     this.selectedDevice.set(devices.length > 0 ? devices[0] : null);
     this.showModal.set(true);
@@ -30,7 +30,12 @@ export class BoardSelectorComponent {
 
   async addDevice() {
     const device = await this.boardService.requestNewDevice();
-    if (device) this.selectedDevice.set(device);
+    if (!device) {
+      console.error("Unsupported device chosen.")
+      return
+    }
+
+    this.selectedDevice.set(device)
   }
 
   async connect() {
@@ -48,11 +53,11 @@ export class BoardSelectorComponent {
     await this.boardService.disconnect();
   }
 
-  selectDevice(device: USBDevice) {
+  selectDevice(device: BoardDevice) {
     this.selectedDevice.set(device);
   }
 
-  isSelected(device: USBDevice): boolean {
+  isSelected(device: BoardDevice): boolean {
     return this.selectedDevice() === device;
   }
 }

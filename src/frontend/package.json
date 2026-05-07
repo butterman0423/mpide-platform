@@ -36,13 +36,18 @@
     "@angular/ssr": "^21.1.5",
     "@ant-design/icons-angular": "^21.0.0",
     "@fontsource/fira-code": "^5.2.7",
+    "@types/dom-serial": "^1.0.6",
     "@types/google.accounts": "^0.0.18",
+    "buffer": "^6.0.3",
     "express": "^5.1.0",
+    "intel-hex": "^0.2.0",
     "jszip": "^3.10.1",
     "ng-zorro-antd": "^21.1.0",
     "ngx-monaco-editor-v2": "^21.1.4",
+    "readable-web-to-node-stream": "^5.0.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "stk500": "^2.0.3",
+    "zone.js": "^0.16.1"
   },
   "devDependencies": {
     "@angular/build": "^21.1.5",

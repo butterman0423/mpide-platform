@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/routes"
+	testroutes "backend/test/routes"
 	"backend/utilites"
 	"fmt"
 	"log"
@@ -12,6 +13,10 @@ import (
 
 func handleRequests() *http.ServeMux {
 	mux := http.NewServeMux()
+
+	// Testing routes
+	mux.HandleFunc("GET /test/led", testroutes.SendTest_LED)
+
 	// Sanity Check
 	mux.HandleFunc("POST /compiler/request", routes.RequestCompiler)
 	mux.HandleFunc("POST /compiler/j/{id}", routes.SubmitCompile)

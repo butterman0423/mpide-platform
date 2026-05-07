@@ -13,6 +13,8 @@ import { BoardService } from './services/board-services/board';
 import { NotificationComponent } from './components/notification/notification.component';
 import { NotificationService } from './services/event-services/notification-services';
 import { GDriveService } from './services/google-service/gdrive';
+import { environment } from '../environments/environment.development';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -36,6 +38,8 @@ export class App implements OnDestroy{
   fileStoreService = inject(FileStoreService);
   opfsService = inject(OpfsService);
 
+  httpTest = inject(HttpClient)
+
   renamedProject = "";
 
   // TODO: Remove me and the "Test AUTH" button when 
@@ -43,6 +47,22 @@ export class App implements OnDestroy{
   // This is just to test google auth popup and token generation
   test() {
     this.gdriveService.requestAuth()
+  }
+
+  async testSerialUpload() {
+    if (!this.boardService.connectedBoard()) {
+      console.warn("Connect a board before running the test.")
+      return
+    }
+
+    const url = `${environment.backendUrl}test/led`
+    const obsv = this.httpTest.get(url, { responseType: "blob" })
+
+    obsv.subscribe({
+      next: async (blob) => {
+        this.boardService.uploadExecutable(blob)
+      }
+    })
   }
 
   handleProjectCreated(newName: string){
@@ -114,7 +134,7 @@ export class App implements OnDestroy{
         try {
           const binary = await blob.arrayBuffer();
           this.compiledExecutable.set(new Uint8Array(binary));
-          await this.boardService.uploadExecutable(binary);
+          await this.boardService.uploadExecutable(blob);
         } catch (e) {
           console.error('Failed to upload executable to board:', e);
         }
