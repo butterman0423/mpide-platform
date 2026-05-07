@@ -58,12 +58,12 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
 
     handleNewProject(){
         this.ActionRemember = "new";
-        this.WarningModal.set(true);
+        this.openWarningModal();
     }
 
     handleImport() {
         this.ActionRemember = "import";
-        this.WarningModal.set(true);
+        this.openWarningModal();
     }
 
     private getUniqueName(name: string): string {
@@ -97,7 +97,7 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
 
     async handleOpenProject(){
         this.ActionRemember = "open";
-        this.WarningModal.set(true);
+        this.openWarningModal();
     }
 
     async handleSave(){
@@ -132,7 +132,15 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
 
     async handleDelete(){
         this.ActionRemember = "delete";
-        this.WarningModal.set(true);
+        this.openWarningModal();
+    }
+
+    openWarningModal() {
+        if (this.fileService.isProjectUnsaved()) {
+            this.WarningModal.set(true);
+        } else {
+            this.confirmWarn();
+        }
     }
 
     closeWarningModal() {
@@ -160,6 +168,5 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
         this.closeWarningModal();
     }
 
-    
 
   }
