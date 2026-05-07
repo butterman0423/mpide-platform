@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
 import { BoardService } from './services/board-services/board';
 import { NotificationComponent } from './components/notification/notification.component';
 import { NotificationService } from './services/event-services/notification-services';
-import { GDriveService } from './services/google-service/gdrive';
 import { environment } from '../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 
@@ -33,7 +32,6 @@ export class App implements OnDestroy{
   private fileCompileService = inject(FileCompilerService)
   private boardService = inject(BoardService)
   private notificationService = inject(NotificationService)
-  private gdriveService = inject(GDriveService)
 
   fileStoreService = inject(FileStoreService);
   opfsService = inject(OpfsService);
@@ -41,13 +39,6 @@ export class App implements OnDestroy{
   httpTest = inject(HttpClient)
 
   renamedProject = "";
-
-  // TODO: Remove me and the "Test AUTH" button when 
-  // the other Google Drive API features are added in. 
-  // This is just to test google auth popup and token generation
-  test() {
-    this.gdriveService.requestAuth()
-  }
 
   async testSerialUpload() {
     if (!this.boardService.connectedBoard()) {
@@ -74,10 +65,11 @@ export class App implements OnDestroy{
     this.consoleMsgs.set([]);
   }
 
-  handleCompile(compilerId: string) {
+  handleUpload(compilerId: string) {
     if (this.isExecuting) {
       return
     }
+
     this.isExecuting = true;
     this.consoleMsgs.set([
       {
@@ -88,7 +80,14 @@ export class App implements OnDestroy{
         },
       }
   ]);
-    this.sseSubscription = this.fileCompileService.submitFiles(compilerId).subscribe({
+    const board = this.boardService.connectedBoard();
+    if (board === null) {
+      this.notificationService.show("Connect to an arduino board first.", "ERROR");
+      return
+    }
+
+    let execError = false;
+    this.sseSubscription = this.fileCompileService.submitFiles(compilerId, board).subscribe({
       next: (event: CompileStreamEvent) => {
         const row: MessageData = {
           ty: 'BUILD',
@@ -98,6 +97,11 @@ export class App implements OnDestroy{
             is_error: event.is_error,
           },
         };
+
+        if (event.is_error) {
+            execError = true;
+        }
+
         this.consoleMsgs.update((msgs) => [...msgs, row]);
       },
       error: () => {
@@ -105,15 +109,12 @@ export class App implements OnDestroy{
       },
       complete: () => {
         this.stopListening();
+        
+        if(!execError) {
+          this.getExecutable(compilerId);
+        }
       },
     });
-  }
-
-  handleExecute(compilerId: string) {
-    if (this.isExecuting) {
-      return;
-    }
-    this.getExecutable(compilerId);
   }
 
   private async getExecutable(compilerId: string) {

@@ -66,6 +66,15 @@ type ProjectFile struct {
 	Content   string `json:"content"`
 }
 
+type SubmitRequest struct {
+	Files        []ProjectFile `json:"files"`
+	ArduinoBoard string        `json:"arduino_board"`
+}
+
+type ExecuteRequest struct {
+	ArduinoBoard string `json:"arduino_board"`
+}
+
 func SubmitCompile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "the method used is not allowed", http.StatusMethodNotAllowed)
@@ -91,12 +100,13 @@ func SubmitCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var files []ProjectFile
-	if err := json.NewDecoder(r.Body).Decode(&files); err != nil {
+	var subReq SubmitRequest
+	if err := json.NewDecoder(r.Body).Decode(&subReq); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	files := subReq.Files
 	for _, f := range files {
 		if f.FileName == "" || f.Extension == "" {
 			http.Error(w, "the file must have a file_name and extension", http.StatusBadRequest)
@@ -122,8 +132,18 @@ func SubmitCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	execReq := ExecuteRequest{
+		ArduinoBoard: subReq.ArduinoBoard,
+	}
+	jsonData, err := json.Marshal(execReq)
+	if err != nil {
+		log.Printf("Failed to encode JSON: %v", err)
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+
 	startQuery := fmt.Sprintf("%s/v1/start/%s", compilerUrl, id)
-	resp, err := http.Post(startQuery, "application/json", bytes.NewBuffer([]byte{}))
+	resp, err := http.Post(startQuery, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to start compile job: %v", err), http.StatusInternalServerError)
 		return
@@ -256,11 +276,19 @@ func RetrieveExecutable(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dirPath = filepath.Clean(dirPath)
-	execPath := filepath.Join(dirPath, "main.elf")
+	execPath := filepath.Join(dirPath, "main.hex")
 	if _, err := os.Stat(execPath); os.IsNotExist(err) {
-		http.Error(w, "Missing executable file main.elf", http.StatusNotFound)
+		http.Error(w, "Missing executable file main.hex", http.StatusNotFound)
 		return
 	}
+
+	hexfile, err := os.Open(execPath)
+	if err != nil {
+		log.Printf("Failed to open executable %s: %v", execPath, err)
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+	defer utilites.CloseResource(hexfile)()
 
 	// Clean up resources
 	cleanUpQuery := fmt.Sprintf("%s/v1/clean/%s", compilerUrl, id)
@@ -274,6 +302,8 @@ func RetrieveExecutable(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to clean compiler resources")
 	}
 
-	http.ServeFile(w, r, execPath)
+	w.Header().Set("Content-Disposition", "attachment; filename=main.hex")
+	w.Header().Set("Content-Type", "application/octet-stream")
+	http.ServeContent(w, r, "main.hex", time.Time{}, hexfile)
 
 }

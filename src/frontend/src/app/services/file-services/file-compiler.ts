@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse, } from '@angular/common/htt
 import { environment } from '../../../environments/environment.development';
 import { FileStoreService } from './file-store';
 import { catchError, map, Observable, of, throwError } from 'rxjs';
+import { BoardDevice, BoardService } from '../board-services/board';
 
 interface requestCompilerResp {
   id: string
@@ -13,6 +14,11 @@ interface ProjectFile {
   file_name: string
   extension: string
   content: string
+}
+
+interface ExecutePayload {
+  files: ProjectFile[]
+  arduino_board: string
 }
 
 /** Payload from compiler SSE (`data:` JSON). */
@@ -28,6 +34,7 @@ export interface CompileStreamEvent {
 export class FileCompilerService {
   private http = inject(HttpClient)
   private fileStoreService = inject(FileStoreService)
+  private boardService = inject(BoardService)
   private _zone = inject(NgZone)
 
 
@@ -64,7 +71,11 @@ export class FileCompilerService {
    * Opens the compile log SSE immediately and POSTs project files in parallel.
    * Emits one value per SSE message until stage DONE, then completes.
    */
-  submitFiles(id: string): Observable<CompileStreamEvent> {
+  submitFiles(id: string, board: BoardDevice): Observable<CompileStreamEvent> {
+    if ( board === null) {
+      return throwError(() => new Error("Connect to an arduino board first."))
+    }
+
     const fileList: IdeFile[] = this.fileStoreService.fileList();
 
     const nonEmptyFiles = fileList.filter(f => f.fileContent.trim().length > 0);
@@ -73,7 +84,7 @@ export class FileCompilerService {
       return throwError(() => new Error("No files with content to compile."));
     }
 
-    const payload: ProjectFile[] = nonEmptyFiles
+    const requestFiles: ProjectFile[] = nonEmptyFiles
       .map(f => {
         const dotIndex = f.fileName.lastIndexOf('.');
         const fileName = dotIndex !== -1 ? f.fileName.substring(0, dotIndex) : f.fileName;
@@ -85,7 +96,7 @@ export class FileCompilerService {
         };
       });
 
-    if (payload.length === 0) {
+    if (requestFiles.length === 0) {
       return throwError(() => new Error("No valid files to compile."));
     }
 
@@ -136,6 +147,12 @@ export class FileCompilerService {
           observer.error(new Error('EventSource connection error'));
         });
       };
+
+      const payload: ExecutePayload = {
+        files: requestFiles,
+        arduino_board: board.id
+      }
+
 
       const postSub = this.http.post(postUrl, payload, {
         observe: 'response',

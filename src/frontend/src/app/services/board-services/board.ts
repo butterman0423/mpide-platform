@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { BoardOpts } from '../../types/stk500';
-import { BOARD_IDS, BOARD_OPTIONS, getBoardKey } from './board-opts';
+import { BOARD_IDS, BOARD_OPTIONS, getBoardKey, idGrab } from './board-opts';
 import { ReadableWebToNodeStream } from 'readable-web-to-node-stream';
 
 // @ts-expect-error Libs below only support ES5 with no typing defs, so typescript throws errors
@@ -15,6 +15,7 @@ import type { intel_hex as intel_hex_t } from '../../types/intel-hex';
 
 
 export interface BoardDevice {
+  id: string,
   opts: BoardOpts,
   name: string,
   device: SerialPort
@@ -52,6 +53,7 @@ export class BoardService {
       const boardMeta: BoardDevice = {
         opts: opt,
         name: opt.name,
+        id: idGrab(device.getInfo()),
         device: device
       }
 
