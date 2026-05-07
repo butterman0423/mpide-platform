@@ -150,7 +150,7 @@ export class FileCompilerService {
 
       const payload: ExecutePayload = {
         files: requestFiles,
-        arduino_board: board.name
+        arduino_board: board.id
       }
 
 
