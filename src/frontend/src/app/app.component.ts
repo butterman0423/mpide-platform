@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
 import { BoardService } from './services/board-services/board';
 import { NotificationComponent } from './components/notification/notification.component';
 import { NotificationService } from './services/event-services/notification-services';
-import { environment } from '../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
