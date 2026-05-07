@@ -1,6 +1,7 @@
 import { inject, Injectable} from '@angular/core';
 import { IdeFile } from '../models/file.model';
 import { FileStoreService } from './file-services/file-store';
+import { NotificationService } from './event-services/notification-services';
 
 @Injectable({
   providedIn: 'root',
@@ -8,6 +9,7 @@ import { FileStoreService } from './file-services/file-store';
 export class OpfsService {
 
   fileStore = inject(FileStoreService);
+  private notificationService = inject(NotificationService);
   
   async saveProject(projectName: string, files:IdeFile[]) {
     const root = await navigator.storage.getDirectory();
@@ -32,6 +34,10 @@ export class OpfsService {
         await projectDir.removeEntry(name);
       }
     }
+
+    this.notificationService.show("Project saved successfully!", "SUCCESS");
+    this.fileStore.markCurrentStateAsSaved();
+
   }
 
   async getProjects(): Promise<string[]> {
@@ -64,6 +70,7 @@ export class OpfsService {
     }
     this.fileStore.projectName.set(projectName);
     this.fileStore.fileList.set(files);
+    this.fileStore.markCurrentStateAsSaved();
   }
 
   async renameProject(oldName: string, newName: string, files: IdeFile[]){
@@ -90,5 +97,6 @@ export class OpfsService {
       }
       this.fileStore.projectName.set("Untitled Project");
       this.fileStore.fileList.set([]);
+      this.fileStore.markCurrentStateAsSaved();
   }
 }

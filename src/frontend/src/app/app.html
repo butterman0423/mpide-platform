@@ -35,11 +35,17 @@
 }
       @else {
 
-        <button 
-          class="text-sm text-gray-400 hover:bg-[#54667a] cursor-pointer" 
+        <button
+          class="flex items-center gap-2 text-sm text-gray-400 hover:bg-[#54667a] cursor-pointer"
 
           (click)="fileStoreService.projectNameIsBeingEdited.set(true)">
           {{fileStoreService.projectName()}}
+          @if(fileStoreService.isProjectUnsaved()){
+            <span
+              class="inline-block h-2 w-2 rounded-full bg-white"
+              title="Unsaved changes"
+            ></span>
+          }
         </button>
       }
 

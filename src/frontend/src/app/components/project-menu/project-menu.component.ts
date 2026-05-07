@@ -50,9 +50,6 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
     public WarningModal = signal<boolean>(false);
     public ActionRemember = ""; 
 
-    public successMessage = "";
-
-    
 
     @HostListener('window:beforeunload', ['$event'])
     unloadNotification($event: BeforeUnloadEvent): void {
@@ -61,12 +58,12 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
 
     handleNewProject(){
         this.ActionRemember = "new";
-        this.WarningModal.set(true);
+        this.openWarningModal();
     }
 
     handleImport() {
         this.ActionRemember = "import";
-        this.WarningModal.set(true);
+        this.openWarningModal();
     }
 
     private getUniqueName(name: string): string {
@@ -100,18 +97,13 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
 
     async handleOpenProject(){
         this.ActionRemember = "open";
-        this.WarningModal.set(true);
+        this.openWarningModal();
     }
 
     async handleSave(){
         try {
-            console.log(this.fileService.fileList())
             await this.opfsService.saveProject(this.fileService.projectName(), this.fileService.fileList());
-            // alert("Project saved successfully!");
-            this.successMessage = "Project saved successfully!";
-            this.notificationService.show("Project saved successfully!", "SUCCESS");
         } catch (err) {
-            // alert(err instanceof Error ? err.message : "An unknown error occurred.");
             const errMessage = err instanceof Error ? err.message : "An unknown error occurred.";
             this.notificationService.show(errMessage, "ERROR");
         }
@@ -140,7 +132,15 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
 
     async handleDelete(){
         this.ActionRemember = "delete";
-        this.WarningModal.set(true);
+        this.openWarningModal();
+    }
+
+    openWarningModal() {
+        if (this.fileService.isProjectUnsaved()) {
+            this.WarningModal.set(true);
+        } else {
+            this.confirmWarn();
+        }
     }
 
     closeWarningModal() {
@@ -168,6 +168,5 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
         this.closeWarningModal();
     }
 
-    
 
   }
