@@ -49,7 +49,6 @@
       <span class="text-xs text-gray-500">Copyright</span>
       <span class="text-xs text-gray-500">Help</span>
       <span class="text-xs text-gray-500">Contact</span>
-      <button (click)="test()">Test Auth</button>
       <button (click)="testSerialUpload()">Test Serial Upload</button>
     </div>
   </div>
@@ -59,8 +58,7 @@
     <app-file-management class="flex-shrink-0 basis-[15%]"></app-file-management>
     <app-editor-panel
       class="flex-1 flex flex-col min-w-0 h-full"
-      (compileRequest)="handleCompile($event)"
-      (executeRequest)="handleExecute($event)"
+      (uploadRequest)="handleUpload($event)"
     />
     <app-console class="max-w-[30%] w-full" [msgs]="consoleMsgs()"></app-console>
   </div>

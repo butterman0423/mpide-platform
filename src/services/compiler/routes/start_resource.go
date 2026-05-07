@@ -24,6 +24,20 @@ const (
 	stageDone    = "DONE"
 )
 
+type BoardArgs struct {
+	MCU  string
+	FCPU string
+}
+
+var boards = map[string]BoardArgs{
+	"inland-nano-ft232": {MCU: "atmega328p", FCPU: "16000000UL"},
+	"inland-uno":        {MCU: "atmega328p", FCPU: "16000000UL"},
+}
+
+type ExecuteRequest struct {
+	ArdunioBoard string `json:"arduino_board"`
+}
+
 type compileJob struct {
 	done     chan struct{}
 	exitCode atomic.Int32
@@ -64,6 +78,18 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var execReq ExecuteRequest
+	if err := json.NewDecoder(r.Body).Decode(&execReq); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	board, ok := boards[execReq.ArdunioBoard]
+	if !ok {
+		http.Error(w, "The arduino board is not supported", http.StatusBadRequest)
+		return
+	}
+
 	var sourceFiles []string
 	for _, entry := range entries {
 		ext := filepath.Ext(entry.Name())
@@ -98,11 +124,18 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 	job.exitCode.Store(-1)
 	compileJobs.Store(id, job)
 
-	args := append([]string{"-mmcu=atmega328p", "-Wall", "-I", "./", "-o", "main.elf"}, sourceFiles...)
-	cmd := exec.Command("avr-gcc", args...)
-	cmd.Stdout = stdoutFile
-	cmd.Stderr = stderrFile
-	cmd.Dir = dirPath
+	gccArgs := append([]string{
+		"-mmcu=" + board.MCU,
+		"-DF_CPU=" + board.FCPU,
+		"-Os",
+		"-Wall",
+		"-I", "./",
+		"-o", "main.elf"}, sourceFiles...)
+
+	gccCmd := exec.Command("avr-gcc", gccArgs...)
+	gccCmd.Stdout = stdoutFile
+	gccCmd.Stderr = stderrFile
+	gccCmd.Dir = dirPath
 
 	go func() {
 		defer func() {
@@ -110,7 +143,7 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 			_ = stderrFile.Close()
 		}()
 
-		runErr := cmd.Run()
+		runErr := gccCmd.Run()
 		code := 0
 		if runErr != nil {
 			if ee, ok := runErr.(*exec.ExitError); ok {
@@ -119,6 +152,30 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 				code = 1
 			}
 			log.Printf("Compilation finished for id %s with error: %v", id, runErr)
+		} else {
+
+			objcopyArgs := []string{
+				"-O",
+				"ihex",
+				"-R",
+				".eeprom",
+				"main.elf",
+				"main.hex",
+			}
+			objcopyCmd := exec.Command("avr-objcopy", objcopyArgs...)
+			objcopyCmd.Stdout = stdoutFile
+			objcopyCmd.Stderr = stderrFile
+			objcopyCmd.Dir = dirPath
+
+			runErr2 := objcopyCmd.Run()
+			if runErr2 != nil {
+				if ee, ok := runErr2.(*exec.ExitError); ok {
+					code = ee.ExitCode()
+				} else {
+					code = 1
+				}
+				log.Printf("Objcopy finished for id %s with error: %v", id, runErr2)
+			}
 		}
 		job.exitCode.Store(int32(code))
 		close(job.done)

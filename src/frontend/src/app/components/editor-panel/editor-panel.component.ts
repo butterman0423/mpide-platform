@@ -33,8 +33,7 @@ export class EditorPanel implements OnInit, OnDestroy {
 
   private compilerId: string | undefined;
 
-  compileRequest = output<string>();
-  executeRequest = output<string>();
+  uploadRequest = output<string>();
   
   ngOnInit(): void {
       this.eventSub = this.eventService.event$.subscribe(() => {
@@ -63,7 +62,7 @@ export class EditorPanel implements OnInit, OnDestroy {
     this.code = "";
   }
 
-  handleCompilerRequest(){
+  handleUploadRequest(){
     if (!this.boardService.connectedBoard()) {
       console.error('Cannot compile: no connected Arduino board.');
       this.notificationService.show('Connect an Arduino board first.', 'ERROR');
@@ -78,25 +77,10 @@ export class EditorPanel implements OnInit, OnDestroy {
           return;
         }
         this.compilerId = id;
-        this.compileRequest.emit(this.compilerId);
+        this.uploadRequest.emit(this.compilerId);
       },
       error: () => this.notificationService.show('Failed to request compiler. Make sure backend/compiler services are running.', 'ERROR')
     });
-  }
-
-  handleExecuteRequest() {
-    if (!this.boardService.connectedBoard()) {
-      console.error('Cannot execute: no connected Arduino board.');
-      this.notificationService.show('Connect an Arduino board first.', 'ERROR');
-      return;
-    }
-
-    if(!this.compilerId || this.compilerId.trim().length <= 0){
-      this.notificationService.show('Request to compile first.', 'ERROR');
-      return;
-    }
-
-    this.executeRequest.emit(this.compilerId);
   }
 
   onCodeChange(newCode: string) {
