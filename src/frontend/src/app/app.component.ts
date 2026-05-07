@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, signal } from '@angular/core';
 import { FileManagementComponent } from "./components/file-management/file-management.component";
 import { EditorPanel } from './components/editor-panel/editor-panel.component';
 import { Console, MessageData } from "./components/console/console";
@@ -40,20 +40,12 @@ export class App implements OnDestroy{
 
   renamedProject = "";
 
-  async testSerialUpload() {
-    if (!this.boardService.connectedBoard()) {
-      console.warn("Connect a board before running the test.")
-      return
+  @HostListener("window:keydown", ["$event"])
+  handleKeyboardSave(event: KeyboardEvent) {
+    if((event.ctrlKey || event.metaKey) && event.key === 's') {
+      event.preventDefault()
+      this.opfsService.saveProject(this.fileStoreService.projectName(), this.fileStoreService.fileList());
     }
-
-    const url = `${environment.backendUrl}test/led`
-    const obsv = this.httpTest.get(url, { responseType: "blob" })
-
-    obsv.subscribe({
-      next: async (blob) => {
-        this.boardService.uploadExecutable(blob)
-      }
-    })
   }
 
   handleProjectCreated(newName: string){

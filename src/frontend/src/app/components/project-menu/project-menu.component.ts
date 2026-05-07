@@ -50,9 +50,6 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
     public WarningModal = signal<boolean>(false);
     public ActionRemember = ""; 
 
-    public successMessage = "";
-
-    
 
     @HostListener('window:beforeunload', ['$event'])
     unloadNotification($event: BeforeUnloadEvent): void {
@@ -105,13 +102,8 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
 
     async handleSave(){
         try {
-            console.log(this.fileService.fileList())
             await this.opfsService.saveProject(this.fileService.projectName(), this.fileService.fileList());
-            // alert("Project saved successfully!");
-            this.successMessage = "Project saved successfully!";
-            this.notificationService.show("Project saved successfully!", "SUCCESS");
         } catch (err) {
-            // alert(err instanceof Error ? err.message : "An unknown error occurred.");
             const errMessage = err instanceof Error ? err.message : "An unknown error occurred.";
             this.notificationService.show(errMessage, "ERROR");
         }
