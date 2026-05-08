@@ -1,4 +1,4 @@
-<div class="flex flex-row mx-4 items-stretch justify-center gap-0 ">
+<div class="flex flex-row mx-4 items-stretch justify-center gap-1 ">
   <div 
   class="flex flex-row items-center gap-2 flex-1 hover:bg-[#54667a]"
     [ngClass]="{
@@ -16,10 +16,12 @@
     <nz-icon nzType="diff" nzTheme="outline" class="flex-shrink-0" /> 
     @if(isBeingEdited()) {
       <input 
+        #editFileInput
         type="text"
-        class="m-0 flex-1 w-full max-w-full border-0 bg-transparent px-1 text-white shadow-[inset_0_0_0_1px_rgb(156,163,175)] box-border"
+        class="m-0 flex-1 w-full max-w-full border-0 bg-[#1E293B] px-1 text-white shadow-[inset_0_0_0_1px_rgb(156,163,175)] box-border"
         [(ngModel)]="newFileName"
         (keyup.enter) = "handleEditFileName(file(), newFileName)"
+        (keyup.escape)="handleEditCancel()"
       />
     }
     @else {

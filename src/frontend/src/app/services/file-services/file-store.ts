@@ -12,6 +12,8 @@ export class FileStoreService {
   isProjectUnsaved = signal<boolean>(false);
 
   projectNameIsBeingEdited = signal<boolean>(false);
+  addFileIsBeingAdded = signal<boolean>(false);
+  editFileKey = signal<string | null>(null);
   private savedFilesSnapshot = signal<string>(this.serializeFiles([]));
 
   //Sort the files so its easier to insert new ones
@@ -43,6 +45,24 @@ export class FileStoreService {
   markCurrentStateAsSaved(): void {
     this.savedFilesSnapshot.set(this.serializeFiles(this.fileList()));
     this.isProjectUnsaved.set(false);
+  }
+
+  cancelProjectRename(): void {
+    this.projectNameIsBeingEdited.set(false);
+  }
+
+  cancelAddFileOperation(): void {
+    this.addFileIsBeingAdded.set(false);
+  }
+
+  cancelEditFileOperation(): void {
+    this.editFileKey.set(null);
+  }
+
+  cancelInputs() {
+    this.projectNameIsBeingEdited.set(false);
+    this.addFileIsBeingAdded.set(false);
+    this.editFileKey.set(null);
   }
 
   private serializeFiles(files: IdeFile[]): string {

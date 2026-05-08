@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnDestroy, signal } from '@angular/core';
+import { Component, effect, ElementRef, HostListener, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { FileManagementComponent } from "./components/file-management/file-management.component";
 import { EditorPanel } from './components/editor-panel/editor-panel.component';
 import { Console, MessageData } from "./components/console/console";
@@ -38,6 +38,18 @@ export class App implements OnDestroy{
   httpTest = inject(HttpClient)
 
   renamedProject = "";
+  @ViewChild('projectRenameInput') private projectRenameInput?: ElementRef<HTMLInputElement>;
+
+  constructor() {
+    effect(() => {
+      if (this.fileStoreService.projectNameIsBeingEdited()) {
+        queueMicrotask(() => {
+          this.projectRenameInput?.nativeElement.focus();
+          this.projectRenameInput?.nativeElement.select();
+        });
+      }
+    });
+  }
 
   @HostListener("window:keydown", ["$event"])
   handleKeyboardSave(event: KeyboardEvent) {
@@ -177,6 +189,12 @@ export class App implements OnDestroy{
       await this.opfsService.renameProject(oldProjectName, this.fileStoreService.projectName(), this.fileStoreService.fileList());
       this.fileStoreService.projectNameIsBeingEdited.set(false);
     }
+  }
+
+  startRename() {
+    this.fileStoreService.cancelAddFileOperation();
+    this.renamedProject = this.fileStoreService.projectName();
+    this.fileStoreService.projectNameIsBeingEdited.set(true);
   }
 
   cancelRename(){

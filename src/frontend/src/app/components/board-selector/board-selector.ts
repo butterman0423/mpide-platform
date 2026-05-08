@@ -1,6 +1,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BoardDevice, BoardService } from '../../services/board-services/board';
+import { FileStoreService } from '../../services/file-services/file-store';
 
 @Component({
   selector: 'app-board-selector',
@@ -11,11 +12,14 @@ import { BoardDevice, BoardService } from '../../services/board-services/board';
 })
 export class BoardSelectorComponent {
   boardService = inject(BoardService);
+  fileStoreService = inject(FileStoreService);
   showModal = signal(false);
   selectedDevice = signal<BoardDevice | null>(null);
   error = signal<string | null>(null);
 
   async openModal() {
+    this.fileStoreService.cancelInputs();
+
     this.error.set(null);
     //await this.boardService.refreshDevices();
     const devices = this.boardService.availableDevices();

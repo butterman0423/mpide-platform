@@ -21,7 +21,7 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
     @ViewChild('importDriveModal') importDriveModal!: ImportModalComponent;
     @ViewChild('exportDriveModal') exportDriveModal!: ExportModalComponent;
     private projectService = inject(ProjectDropDownService);
-    public fileStoreList = inject(FileStoreService);
+    public fileStoreService = inject(FileStoreService);
     public fileSelectionService = inject(FileSelection);
     
     projectCreated = output<string>();
@@ -56,6 +56,12 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
         $event.returnValue = "Any unsaved data may be lost";
     }
 
+    handleOpenMenu(){
+        this.fileStoreService.cancelProjectRename();
+        this.fileStoreService.cancelAddFileOperation();
+        this.fileStoreService.cancelEditFileOperation();
+    }
+
     handleNewProject(){
         this.ActionRemember = "new";
         this.openWarningModal();
@@ -82,9 +88,9 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
         const uniqueName = this.getUniqueName(name);
         this.projectNames.update(names => [...names, uniqueName]);
         // this.currentProjectName.set(uniqueName);
-        this.fileStoreList.projectName.set(uniqueName);
+        this.fileStoreService.projectName.set(uniqueName);
         
-        const newMainFile = this.fileStoreList.resetForNewProject();
+        const newMainFile = this.fileStoreService.resetForNewProject();
         this.fileSelectionService.selectFile(newMainFile);
         
         this.showNewProjectModal.set(false);
@@ -110,7 +116,7 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
     }
 
     handleRename(){
-        this.fileStoreList.projectNameIsBeingEdited.set(true);
+        this.fileStoreService.projectNameIsBeingEdited.set(true);
     }
 
     handleExport(){
@@ -124,7 +130,7 @@ import { ExportModalComponent } from "../export-google-drive/export-google-drive
         const link = document.createElement("a")
         link.href = URL.createObjectURL(zippedFiles);
         // Updated this to use your new currentProjectName signal
-        link.download = `${this.fileStoreList.projectName()}.zip`;
+        link.download = `${this.fileStoreService.projectName()}.zip`;
         link.click()
         link.remove()
 

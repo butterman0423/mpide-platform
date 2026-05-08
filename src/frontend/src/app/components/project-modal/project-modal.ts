@@ -1,6 +1,7 @@
 import { Component, inject, signal, output, OnInit } from '@angular/core';
 import { OpfsService } from '../../services/opfs';
 import { FileSelection } from '../../services/file-services/file-selection';
+import { FileStoreService } from '../../services/file-services/file-store';
 
 @Component({
   selector: 'app-project-modal',
@@ -14,6 +15,7 @@ export class ProjectModal implements OnInit {
 
   opfsService = inject(OpfsService);
   fileSelectionService = inject(FileSelection);
+  fileStoreService = inject(FileStoreService);
 
   projects = signal<string[]>([]);
   selectedProject = signal<string | null>(null);
@@ -25,10 +27,12 @@ export class ProjectModal implements OnInit {
   }
 
   selectProject(projectName: string) {
+    this.fileStoreService.cancelProjectRename();
     this.selectedProject.set(projectName);
   }
 
   onCancel() {
+    this.fileStoreService.cancelProjectRename();
     this.closed.emit();
   }
 

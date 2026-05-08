@@ -63,6 +63,8 @@ export class EditorPanel implements OnInit, OnDestroy {
   }
 
   handleUploadRequest(){
+    this.fileStoreService.cancelInputs();
+
     if (!this.boardService.connectedBoard()) {
       console.error('Cannot compile: no connected Arduino board.');
       this.notificationService.show('Connect an Arduino board first.', 'ERROR');
@@ -86,5 +88,9 @@ export class EditorPanel implements OnInit, OnDestroy {
   onCodeChange(newCode: string) {
     this.compilerId = undefined;
     this.fileSelectionService.updateSelectedFileContent(newCode);
+  }
+
+  handleFocusOnEditor() {
+    this.fileStoreService.cancelInputs();
   }
 }
