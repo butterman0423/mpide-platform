@@ -35,21 +35,20 @@
 }
       @else {
 
-        <button
-          class="flex items-center gap-2 text-sm text-gray-400 hover:bg-[#54667a] cursor-pointer"
+        <button 
+          class="text-sm text-gray-400 hover:bg-[#54667a] cursor-pointer" 
 
           (click)="fileStoreService.projectNameIsBeingEdited.set(true)">
           {{fileStoreService.projectName()}}
-          @if(fileStoreService.isProjectUnsaved()){
-            <span
-              class="inline-block h-2 w-2 rounded-full bg-white"
-              title="Unsaved changes"
-            ></span>
-          }
         </button>
       }
 
 
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-xs text-gray-500">Copyright</span>
+      <span class="text-xs text-gray-500">Help</span>
+      <span class="text-xs text-gray-500">Contact</span>
     </div>
   </div>
 
@@ -58,7 +57,10 @@
     <app-file-management class="flex-shrink-0 basis-[15%]"></app-file-management>
     <app-editor-panel
       class="flex-1 flex flex-col min-w-0 h-full"
-      (uploadRequest)="handleUpload($event)"
+      (compileRequest)="handleCompile($event)"
+      [isCompiling]="isCompiling()"
+      (executeRequest)="handleExecute($event)"
+      (stopCompile)="handleStopCompile($event)"
     />
     <app-console class="max-w-[30%] w-full" [msgs]="consoleMsgs()"></app-console>
   </div>

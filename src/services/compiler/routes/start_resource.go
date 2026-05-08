@@ -24,23 +24,11 @@ const (
 	stageDone    = "DONE"
 )
 
-type BoardArgs struct {
-	MCU  string
-	FCPU string
-}
-
-var boards = map[string]BoardArgs{
-	"inland-nano-ft232": {MCU: "atmega328p", FCPU: "16000000UL"},
-	"inland-uno":        {MCU: "atmega328p", FCPU: "16000000UL"},
-}
-
-type ExecuteRequest struct {
-	ArdunioBoard string `json:"arduino_board"`
-}
-
 type compileJob struct {
 	done     chan struct{}
 	exitCode atomic.Int32
+	cmd      *exec.Cmd
+	mu       sync.Mutex
 }
 
 var compileJobs sync.Map
@@ -78,18 +66,6 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var execReq ExecuteRequest
-	if err := json.NewDecoder(r.Body).Decode(&execReq); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	board, ok := boards[execReq.ArdunioBoard]
-	if !ok {
-		http.Error(w, "The arduino board is not supported", http.StatusBadRequest)
-		return
-	}
-
 	var sourceFiles []string
 	for _, entry := range entries {
 		ext := filepath.Ext(entry.Name())
@@ -122,20 +98,14 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 
 	job := &compileJob{done: make(chan struct{})}
 	job.exitCode.Store(-1)
+
+	args := append([]string{"-mmcu=atmega328p", "-Wall", "-Os", "-I", "./", "-o", "main.elf"}, sourceFiles...)
+	cmd := exec.Command("avr-gcc", args...)
+	cmd.Stdout = stdoutFile
+	cmd.Stderr = stderrFile
+	cmd.Dir = dirPath
+	job.cmd = cmd
 	compileJobs.Store(id, job)
-
-	gccArgs := append([]string{
-		"-mmcu=" + board.MCU,
-		"-DF_CPU=" + board.FCPU,
-		"-Os",
-		"-Wall",
-		"-I", "./",
-		"-o", "main.elf"}, sourceFiles...)
-
-	gccCmd := exec.Command("avr-gcc", gccArgs...)
-	gccCmd.Stdout = stdoutFile
-	gccCmd.Stderr = stderrFile
-	gccCmd.Dir = dirPath
 
 	go func() {
 		defer func() {
@@ -143,7 +113,7 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 			_ = stderrFile.Close()
 		}()
 
-		runErr := gccCmd.Run()
+		runErr := cmd.Run()
 		code := 0
 		if runErr != nil {
 			if ee, ok := runErr.(*exec.ExitError); ok {
@@ -152,30 +122,6 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 				code = 1
 			}
 			log.Printf("Compilation finished for id %s with error: %v", id, runErr)
-		} else {
-
-			objcopyArgs := []string{
-				"-O",
-				"ihex",
-				"-R",
-				".eeprom",
-				"main.elf",
-				"main.hex",
-			}
-			objcopyCmd := exec.Command("avr-objcopy", objcopyArgs...)
-			objcopyCmd.Stdout = stdoutFile
-			objcopyCmd.Stderr = stderrFile
-			objcopyCmd.Dir = dirPath
-
-			runErr2 := objcopyCmd.Run()
-			if runErr2 != nil {
-				if ee, ok := runErr2.(*exec.ExitError); ok {
-					code = ee.ExitCode()
-				} else {
-					code = 1
-				}
-				log.Printf("Objcopy finished for id %s with error: %v", id, runErr2)
-			}
 		}
 		job.exitCode.Store(int32(code))
 		close(job.done)
@@ -326,7 +272,7 @@ func StreamCompileLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jobDoneCh := make(chan struct{})
-	// Background job
+	// Background job — exit when the client disconnects or the job completes.
 	go func() {
 		tick := time.NewTicker(200 * time.Millisecond)
 		defer tick.Stop()
@@ -337,9 +283,13 @@ func StreamCompileLogs(w http.ResponseWriter, r *http.Request) {
 			case <-tick.C:
 				if v, ok := compileJobs.Load(id); ok {
 					j := v.(*compileJob)
-					<-j.done
-					close(jobDoneCh)
-					return
+					select {
+					case <-r.Context().Done():
+						return
+					case <-j.done:
+						close(jobDoneCh)
+						return
+					}
 				}
 			}
 		}

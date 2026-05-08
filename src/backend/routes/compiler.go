@@ -307,3 +307,61 @@ func RetrieveExecutable(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, "main.hex", time.Time{}, hexfile)
 
 }
+
+// CancelCompileJob stops a compile job and frees compiler resources (same cleanup as executable retrieval, without returning a binary).
+func CancelCompileJob(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "the method used is not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+
+	compilerUrl := utilites.GetEnv("COMPILER_URL", "")
+	if compilerUrl == "" {
+		log.Print("Missing COMPILER_URL environment variable")
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+
+	filesPath := utilites.GetEnv("FILES_PATH", "")
+	if filesPath == "" {
+		log.Print("Missing FILES_PATH environment variable")
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+
+	dirPath := filepath.Join(filesPath, id)
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	cleanUpQuery := fmt.Sprintf("%s/v1/clean/%s", strings.TrimRight(compilerUrl, "/"), url.PathEscape(id))
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodDelete, cleanUpQuery, nil)
+	if err != nil {
+		http.Error(w, "There was an internal server error. Please try again", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("cancel compile: compiler cleanup request failed: %v", err)
+		http.Error(w, "Failed to reach compiler service", http.StatusBadGateway)
+		return
+	}
+	defer utilites.CloseResource(resp.Body)()
+
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		http.Error(w, string(body), resp.StatusCode)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+

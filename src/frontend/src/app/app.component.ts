@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { FileManagementComponent } from "./components/file-management/file-management.component";
 import { EditorPanel } from './components/editor-panel/editor-panel.component';
 import { Console, MessageData } from "./components/console/console";
@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
 import { BoardService } from './services/board-services/board';
 import { NotificationComponent } from './components/notification/notification.component';
 import { NotificationService } from './services/event-services/notification-services';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +25,7 @@ export class App implements OnDestroy{
   protected consoleMsgs = signal<MessageData[]>([]);
   private compiledExecutable = signal<Uint8Array | null>(null);
 
-  private isExecuting = false;
+  protected isCompiling = signal(false);
   private sseSubscription?: Subscription;
   private fileCompileService = inject(FileCompilerService)
   private boardService = inject(BoardService)
@@ -35,17 +34,7 @@ export class App implements OnDestroy{
   fileStoreService = inject(FileStoreService);
   opfsService = inject(OpfsService);
 
-  httpTest = inject(HttpClient)
-
   renamedProject = "";
-
-  @HostListener("window:keydown", ["$event"])
-  handleKeyboardSave(event: KeyboardEvent) {
-    if((event.ctrlKey || event.metaKey) && event.key === 's') {
-      event.preventDefault()
-      this.opfsService.saveProject(this.fileStoreService.projectName(), this.fileStoreService.fileList());
-    }
-  }
 
   handleProjectCreated(newName: string){
     this.activeProjectName.set(newName);
@@ -56,12 +45,11 @@ export class App implements OnDestroy{
     this.consoleMsgs.set([]);
   }
 
-  handleUpload(compilerId: string) {
-    if (this.isExecuting) {
+  handleCompile(compilerId: string) {
+    if (this.isCompiling()) {
       return
     }
-
-    this.isExecuting = true;
+    this.isCompiling.set(true);
     this.consoleMsgs.set([
       {
         ty: 'LOG',
@@ -71,14 +59,7 @@ export class App implements OnDestroy{
         },
       }
   ]);
-    const board = this.boardService.connectedBoard();
-    if (board === null) {
-      this.notificationService.show("Connect to an arduino board first.", "ERROR");
-      return
-    }
-
-    let execError = false;
-    this.sseSubscription = this.fileCompileService.submitFiles(compilerId, board).subscribe({
+    this.sseSubscription = this.fileCompileService.submitFiles(compilerId).subscribe({
       next: (event: CompileStreamEvent) => {
         const row: MessageData = {
           ty: 'BUILD',
@@ -88,11 +69,6 @@ export class App implements OnDestroy{
             is_error: event.is_error,
           },
         };
-
-        if (event.is_error) {
-            execError = true;
-        }
-
         this.consoleMsgs.update((msgs) => [...msgs, row]);
       },
       error: () => {
@@ -100,12 +76,12 @@ export class App implements OnDestroy{
       },
       complete: () => {
         this.stopListening();
-        
-        if(!execError) {
-          this.getExecutable(compilerId);
-        }
       },
     });
+  }
+
+  handleExecute(compilerId: string) {
+    this.getExecutable(compilerId);
   }
 
   private async getExecutable(compilerId: string) {
@@ -126,7 +102,7 @@ export class App implements OnDestroy{
         try {
           const binary = await blob.arrayBuffer();
           this.compiledExecutable.set(new Uint8Array(binary));
-          await this.boardService.uploadExecutable(blob);
+          await this.boardService.uploadExecutable(binary);
         } catch (e) {
           console.error('Failed to upload executable to board:', e);
         }
@@ -150,9 +126,29 @@ export class App implements OnDestroy{
       }
     });
   }
+  handleStopCompile(compilerId: string) {
+    this.sseSubscription?.unsubscribe();
+    this.sseSubscription = undefined;
+    this.isCompiling.set(false);
+    this.consoleMsgs.update((msgs) => [
+      ...msgs,
+      {
+        ty: 'LOG',
+        dat: {
+          ty: 'SYSTEM',
+          msg: 'Compile canceled.',
+        },
+      },
+    ]);
+    this.fileCompileService.cancelCompileJob(compilerId).subscribe({
+      error: (err) => console.error(err),
+    });
+  }
+
   private stopListening() {
     this.sseSubscription?.unsubscribe();
-    this.isExecuting = false;
+    this.sseSubscription = undefined;
+    this.isCompiling.set(false);
   }
 
   ngOnDestroy(): void {
