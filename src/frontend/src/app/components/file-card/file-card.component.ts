@@ -1,4 +1,4 @@
-import { Component, input, inject, Output, EventEmitter, signal, computed, effect } from '@angular/core';
+import { Component, input, inject, Output, EventEmitter, signal, computed, effect, ViewChild, ElementRef } from '@angular/core';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { IdeFile } from '../../models/file.model';
 import { FileSelection } from '../../services/file-services/file-selection';
@@ -31,6 +31,8 @@ export class FileCardComponent {
   @Output() editFile = new EventEmitter<IdeFile>();
   @Output() cancelEdit = new EventEmitter<null>();
   @Output() deleteFile = new EventEmitter<IdeFile>();
+  
+  @ViewChild('editFileInput') private editFileInput?: ElementRef<HTMLInputElement>;
 
 
   constructor() {
@@ -38,6 +40,15 @@ export class FileCardComponent {
       const f = this.file();
       if (this.editFileKey() !== null && this.editFileKey() === f.fileName) {
         this.newFileName = f.fileName;
+      }
+    });
+
+    effect(() => {
+      if (this.isBeingEdited()) {
+        queueMicrotask(() => {
+          this.editFileInput?.nativeElement.focus();
+          this.editFileInput?.nativeElement.select();
+        });
       }
     });
   }
@@ -55,12 +66,14 @@ export class FileCardComponent {
     if (this.isBeingEdited()) {
       return;
     }
-    
+    this.fileStoreList.cancelProjectRename();
     this.fileSelectionService.selectFile(file);
     this.notifyParent(this.fileSelected, file);
   }
 
   handleEdit(): void {
+    this.fileStoreList.cancelAddFileOperation();
+    this.fileStoreList.cancelProjectRename();
     this.notifyParent(this.editFile, this.file());
   }
 
@@ -69,6 +82,7 @@ export class FileCardComponent {
   }
 
   handleEditFileName(oldfile: IdeFile, newFileName: string) {
+    this.fileStoreList.cancelProjectRename();
 
     const trimmedName = newFileName.trim();
 
@@ -114,7 +128,7 @@ export class FileCardComponent {
   }
 
   openModal() {
-    this.handleEditCancel();
+    this.fileStoreList.cancelInputs();
     this.showModal.set(true);
   }
 

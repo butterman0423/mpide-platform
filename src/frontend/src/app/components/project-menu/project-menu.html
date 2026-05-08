@@ -1,5 +1,10 @@
 <div>
-  <a nz-dropdown nzTrigger="click" [nzDropdownMenu]="projectMenu"   
+  <a 
+  nz-dropdown nzTrigger="click" 
+  [nzDropdownMenu]="projectMenu" 
+  tabindex="0"
+  (click)="handleOpenMenu()"
+  (keyup.enter)="handleOpenMenu()"
   class=" text-xs px-3 py-1 bg-[#1890FF] text-white rounded hover:bg-[#475569] flex flex-row items-center justify-center gap-1 hover:cursor-pointer">
     Project
     <nz-icon nzType="caret-down" nzTheme="outline" />

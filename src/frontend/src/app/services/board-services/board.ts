@@ -121,7 +121,9 @@ export class BoardService {
       // Propagate any errors
       if (e) throw e
 
-      reader._destroy(null, () => {})
+      reader._destroy(null, () => {
+        // Do nothing
+      })
       writer.releaseLock()
       await device.close()
     })

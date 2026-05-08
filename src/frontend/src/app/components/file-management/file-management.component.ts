@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, ViewChild } from '@angular/core';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { FileCardComponent } from '../file-card/file-card.component';
@@ -17,7 +17,6 @@ import { EventService } from '../../services/event-services/event-service';
   styleUrls: ['./file-management.component.css']
 })
 export class FileManagementComponent{
-  protected addFile = false;
   protected fileError  = false;
   protected errorMessage = "";
 
@@ -26,8 +25,6 @@ export class FileManagementComponent{
   private fileDeletionService = inject(FileDeletion);
   private eventService = inject(EventService);
   public fileStoreList = inject(FileStoreService);
-
-  readonly editFile = signal<string | null>(null);
 
   //The browser automatically focuses on the input field
   @ViewChild('fileInput') set inputRef(content: ElementRef) {
@@ -40,12 +37,23 @@ export class FileManagementComponent{
     newFile: new FormControl('')
   })
 
+  constructor() {
+    effect(() => {
+      if (!this.fileStoreList.addFileIsBeingAdded()) {
+        this.fileError = false;
+        this.fileForm.reset();
+      }
+    });
+  }
+
   handleClick(): void {
-    this.editFile.set(null);
-    this.addFile = true;
+    this.fileStoreList.cancelProjectRename();
+    this.fileStoreList.addFileIsBeingAdded.set(true);
+    this.fileStoreList.cancelEditFileOperation();
   }
 
   handleAddFile(): void {
+    this.fileStoreList.cancelProjectRename();
     
     const name = this.fileForm.get("newFile")?.value?.toLowerCase() ?? "";
 
@@ -74,33 +82,34 @@ export class FileManagementComponent{
   }
   
   resetAddFile(): void {
-    this.fileError = false;
-    this.addFile = false;
-    this.fileForm.reset();
+    this.fileStoreList.cancelAddFileOperation();
   }
 
   handleEditFile(file: IdeFile): void {
-    if (this.addFile) {
+    this.fileStoreList.cancelProjectRename();
+    if (this.fileStoreList.addFileIsBeingAdded()) {
       this.resetAddFile();
     }
-    this.editFile.set(file.fileName);
+    this.fileStoreList.editFileKey.set(file.fileName);
   }
 
   resetEditFile(): void {
-    this.editFile.set(null);
+    this.fileStoreList.cancelEditFileOperation();
   }
 
 
   onFileSelected(selected: IdeFile): void {
-    if (this.editFile() !== null && selected.fileName !== this.editFile()) {
+    this.fileStoreList.cancelProjectRename();
+    if (this.fileStoreList.editFileKey() !== null && selected.fileName !== this.fileStoreList.editFileKey()) {
       this.resetEditFile();
     }
-    if (this.addFile) {
+    if (this.fileStoreList.addFileIsBeingAdded()) {
       this.resetAddFile();
     }
   }
 
   deleteFile(file: IdeFile): void {
+    this.fileStoreList.cancelProjectRename();
     this.fileStoreList.fileList.update(() => this.fileDeletionService.deleteFile(file, this.fileStoreList.fileList()));
     if(this.fileSelectionService.selectedFile() !== null && this.fileSelectionService.selectedFile()?.fileName === file.fileName){
       this.eventService.sendDeleteCode(file);

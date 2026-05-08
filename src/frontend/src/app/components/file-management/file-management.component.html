@@ -10,13 +10,13 @@
       @for (file of this.fileStoreList.fileList(); track (file.fileLink ?? file.fileName)) {
         <!--So the function doesn't run everytime-->
         <app-file-card [file]="file"
-          [editFileKey]="editFile()"
+          [editFileKey]="fileStoreList.editFileKey()"
           (editFile)="handleEditFile($event)"
           (cancelEdit)="resetEditFile()"
           (fileSelected)="onFileSelected($event)"
           (deleteFile)="deleteFile($event)"/>
       }
-      @if (addFile) { 
+      @if (fileStoreList.addFileIsBeingAdded()) { 
         <div class="ml-9 mr-4 bg-[#1E293B]">
             <form 
             class="flex flex-row justify-center gap-0"
@@ -27,6 +27,8 @@
               class="w-full border-1 focus:outline-none"
               [class.border-red-500]="fileError"
               [class.border-[#1890FF]]="!fileError"
+              (keyup.enter)="handleAddFile()"
+              (keyup.escape)="resetAddFile()"
               >
 
               <button type="submit" class="card-buttons bg-[#1890FF] hover:bg-[#60A5FA]">
