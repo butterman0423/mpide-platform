@@ -66,9 +66,11 @@ export class BoardService {
         device: device
       }
 
-      this.availableDevices.update((p) => [
-        boardMeta, ...p
-      ])
+      if(!this.availableDevices().some((b) => b.device === boardMeta.device)){
+        this.availableDevices.update((p) => [
+          boardMeta, ...p
+        ])
+      }
 
       return boardMeta
       
