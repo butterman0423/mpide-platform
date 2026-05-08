@@ -18,6 +18,7 @@ export interface BoardDevice {
   id: string,
   opts: BoardOpts,
   name: string,
+  timeConnected: string,
   device: SerialPort
 }
 
@@ -42,16 +43,25 @@ export class BoardService {
   }
 
   async requestNewDevice(): Promise<BoardDevice | null> {
+    navigator.serial.addEventListener("disconnect", async (evt) => {
+      const rmPort = evt.target as SerialPort
+      await rmPort.forget();
+
+      const updatedAvailableBoards = this.availableDevices().filter((b) => b.device !== rmPort);
+      this.availableDevices.set(updatedAvailableBoards);
+    }, { once: false })
+
     const device =  await navigator.serial.requestPort({
       filters: BOARD_IDS
     })
-
+    device.getInfo();
     const boardKey = getBoardKey(device.getInfo())
     if (boardKey in BOARD_OPTIONS) {
       const opt = BOARD_OPTIONS[boardKey]
       const boardMeta: BoardDevice = {
         opts: opt,
         name: opt.name,
+        timeConnected: new Date().toTimeString().slice(0,8),
         id: idGrab(device.getInfo()),
         device: device
       }
