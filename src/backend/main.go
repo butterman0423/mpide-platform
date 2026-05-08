@@ -16,6 +16,7 @@ func handleRequests() *http.ServeMux {
 	mux.HandleFunc("POST /compiler/request", routes.RequestCompiler)
 	mux.HandleFunc("POST /compiler/j/{id}", routes.SubmitCompile)
 	mux.HandleFunc("GET /compiler/j/{id}", routes.RetrieveExecutable)
+	mux.HandleFunc("DELETE /compiler/j/{id}", routes.CancelCompileJob)
 	mux.HandleFunc("GET /compiler/poll", routes.ListenToCompiler)
 	return mux
 }

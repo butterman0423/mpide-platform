@@ -1,6 +1,16 @@
-import { Component, PLATFORM_ID, inject, effect, OnInit, OnDestroy, output } from '@angular/core';
+import {
+  Component,
+  PLATFORM_ID,
+  inject,
+  effect,
+  OnInit,
+  OnDestroy,
+  output,
+  input,
+  signal,
+} from '@angular/core';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
-import { isPlatformBrowser} from '@angular/common';
+import { isPlatformBrowser, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileSelection } from '../../services/file-services/file-selection';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -14,7 +24,7 @@ import { NotificationService } from '../../services/event-services/notification-
 
 @Component({
   selector: 'app-editor-panel',
-  imports: [MonacoEditorModule, FormsModule, NzIconModule, BoardSelectorComponent],
+  imports: [MonacoEditorModule, FormsModule, NzIconModule, BoardSelectorComponent, NgClass],
   templateUrl: './editor-panel.html',
   styleUrl: './editor-panel.css',
 })
@@ -34,7 +44,14 @@ export class EditorPanel implements OnInit, OnDestroy {
   private compilerId: string | undefined;
 
   compileRequest = output<string>();
+  isCompiling = input(false);
   executeRequest = output<string>();
+  stopCompile = output<string>();
+
+  private readonly compileActionCooldownMs = 1500;
+  private cooldownTimer?: ReturnType<typeof setTimeout>;
+  /** Short lock after compile-related actions to limit rapid repeat requests. */
+  protected compileActionsLocked = signal(false);
   
   ngOnInit(): void {
       this.eventSub = this.eventService.event$.subscribe(() => {
@@ -44,6 +61,9 @@ export class EditorPanel implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
       this.eventSub.unsubscribe();
+      if (this.cooldownTimer !== undefined) {
+        clearTimeout(this.cooldownTimer);
+      }
   }
   
   constructor() {
@@ -63,12 +83,30 @@ export class EditorPanel implements OnInit, OnDestroy {
     this.code = "";
   }
 
-  handleCompilerRequest(){
+  private touchCompileActionCooldown() {
+    this.compileActionsLocked.set(true);
+    if (this.cooldownTimer !== undefined) {
+      clearTimeout(this.cooldownTimer);
+    }
+    this.cooldownTimer = setTimeout(() => {
+      this.compileActionsLocked.set(false);
+      this.cooldownTimer = undefined;
+    }, this.compileActionCooldownMs);
+  }
+
+  handleCompilerRequest() {
     if (!this.boardService.connectedBoard()) {
       console.error('Cannot compile: no connected Arduino board.');
       this.notificationService.show('Connect an Arduino board first.', 'ERROR');
       return;
     }
+    if (this.isCompiling()) {
+      return;
+    }
+    if (this.compileActionsLocked()) {
+      return;
+    }
+    this.touchCompileActionCooldown();
 
     this.fileCompilerService.requestCompiler().subscribe({
       next: (id) => {
@@ -84,18 +122,40 @@ export class EditorPanel implements OnInit, OnDestroy {
     });
   }
 
+  handleCompileOrStop() {
+    if (this.isCompiling()) {
+      this.handleStopCompile();
+      return;
+    }
+    this.handleCompilerRequest();
+  }
+
+  private handleStopCompile() {
+    if (!this.compilerId || this.compilerId.trim().length <= 0) {
+      return;
+    }
+    this.touchCompileActionCooldown();
+    this.stopCompile.emit(this.compilerId);
+  }
+
   handleExecuteRequest() {
     if (!this.boardService.connectedBoard()) {
       console.error('Cannot execute: no connected Arduino board.');
       this.notificationService.show('Connect an Arduino board first.', 'ERROR');
       return;
     }
-
-    if(!this.compilerId || this.compilerId.trim().length <= 0){
+    if (this.isCompiling()) {
+      return;
+    }
+    if (this.compileActionsLocked()) {
+      return;
+    }
+    if (!this.compilerId || this.compilerId.trim().length <= 0) {
       this.notificationService.show('Request to compile first.', 'ERROR');
       return;
     }
 
+    this.touchCompileActionCooldown();
     this.executeRequest.emit(this.compilerId);
   }
 

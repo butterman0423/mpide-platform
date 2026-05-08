@@ -13,10 +13,19 @@
 
       <!-- Right side: action buttons -->
       <div class="flex items-center gap-2 px-3">
-         <button class="text-xs px-3 py-1 bg-[#3B82F6] text-white rounded hover:bg-[#2563eb] hover:cursor-pointer"
-         style="font-family: 'Roboto', sans-serif; font-weight: 800;" (click)="handleCompilerRequest()">Compile</button>
-         <button class="text-xs px-3 py-1 bg-[#3B82F6] text-white rounded hover:bg-[#2563eb] hover:cursor-pointer"
-         style="font-family: 'Roboto', sans-serif; font-weight: 800;" (click)="handleExecuteRequest()">Execute</button>
+         <button
+         type="button"
+         class="text-xs px-3 py-1 text-white rounded hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+         [ngClass]="isCompiling() ? 'bg-red-600 hover:bg-red-500' : 'bg-[#3B82F6] hover:bg-[#2563eb]'"
+         style="font-family: 'Roboto', sans-serif; font-weight: 800;"
+         [disabled]="compileActionsLocked() && !isCompiling()"
+         (click)="handleCompileOrStop()">{{ isCompiling() ? 'Stop' : 'Compile' }}</button>
+         <button
+         type="button"
+         class="text-xs px-3 py-1 bg-[#3B82F6] text-white rounded hover:bg-[#2563eb] hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+         style="font-family: 'Roboto', sans-serif; font-weight: 800;"
+         [disabled]="compileActionsLocked() || isCompiling()"
+         (click)="handleExecuteRequest()">Execute</button>
         <app-board-selector />
       </div>
     </div>

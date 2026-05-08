@@ -25,7 +25,7 @@ export class App implements OnDestroy{
   protected consoleMsgs = signal<MessageData[]>([]);
   private compiledExecutable = signal<Uint8Array | null>(null);
 
-  private isExecuting = false;
+  protected isCompiling = signal(false);
   private sseSubscription?: Subscription;
   private fileCompileService = inject(FileCompilerService)
   private boardService = inject(BoardService)
@@ -46,10 +46,10 @@ export class App implements OnDestroy{
   }
 
   handleCompile(compilerId: string) {
-    if (this.isExecuting) {
+    if (this.isCompiling()) {
       return
     }
-    this.isExecuting = true;
+    this.isCompiling.set(true);
     this.consoleMsgs.set([
       {
         ty: 'LOG',
@@ -81,9 +81,6 @@ export class App implements OnDestroy{
   }
 
   handleExecute(compilerId: string) {
-    if (this.isExecuting) {
-      return;
-    }
     this.getExecutable(compilerId);
   }
 
@@ -129,9 +126,29 @@ export class App implements OnDestroy{
       }
     });
   }
+  handleStopCompile(compilerId: string) {
+    this.sseSubscription?.unsubscribe();
+    this.sseSubscription = undefined;
+    this.isCompiling.set(false);
+    this.consoleMsgs.update((msgs) => [
+      ...msgs,
+      {
+        ty: 'LOG',
+        dat: {
+          ty: 'SYSTEM',
+          msg: 'Compile canceled.',
+        },
+      },
+    ]);
+    this.fileCompileService.cancelCompileJob(compilerId).subscribe({
+      error: (err) => console.error(err),
+    });
+  }
+
   private stopListening() {
     this.sseSubscription?.unsubscribe();
-    this.isExecuting = false;
+    this.sseSubscription = undefined;
+    this.isCompiling.set(false);
   }
 
   ngOnDestroy(): void {

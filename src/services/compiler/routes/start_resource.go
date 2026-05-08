@@ -27,6 +27,8 @@ const (
 type compileJob struct {
 	done     chan struct{}
 	exitCode atomic.Int32
+	cmd      *exec.Cmd
+	mu       sync.Mutex
 }
 
 var compileJobs sync.Map
@@ -96,13 +98,14 @@ func StartCompile(w http.ResponseWriter, r *http.Request) {
 
 	job := &compileJob{done: make(chan struct{})}
 	job.exitCode.Store(-1)
-	compileJobs.Store(id, job)
 
-	args := append([]string{"-mmcu=atmega328p", "-Wall", "-I", "./", "-o", "main.elf"}, sourceFiles...)
+	args := append([]string{"-mmcu=atmega328p", "-Wall", "-Os", "-I", "./", "-o", "main.elf"}, sourceFiles...)
 	cmd := exec.Command("avr-gcc", args...)
 	cmd.Stdout = stdoutFile
 	cmd.Stderr = stderrFile
 	cmd.Dir = dirPath
+	job.cmd = cmd
+	compileJobs.Store(id, job)
 
 	go func() {
 		defer func() {
@@ -269,7 +272,7 @@ func StreamCompileLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jobDoneCh := make(chan struct{})
-	// Background job
+	// Background job — exit when the client disconnects or the job completes.
 	go func() {
 		tick := time.NewTicker(200 * time.Millisecond)
 		defer tick.Stop()
@@ -280,9 +283,13 @@ func StreamCompileLogs(w http.ResponseWriter, r *http.Request) {
 			case <-tick.C:
 				if v, ok := compileJobs.Load(id); ok {
 					j := v.(*compileJob)
-					<-j.done
-					close(jobDoneCh)
-					return
+					select {
+					case <-r.Context().Done():
+						return
+					case <-j.done:
+						close(jobDoneCh)
+						return
+					}
 				}
 			}
 		}

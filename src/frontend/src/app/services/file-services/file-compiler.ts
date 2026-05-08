@@ -173,6 +173,20 @@ export class FileCompilerService {
 
   }
 
+  /** Cancels an in-flight compile and triggers compiler cleanup (no binary). */
+  cancelCompileJob(compilerId: string): Observable<void> {
+    if (compilerId.trim().length <= 0) {
+      return throwError(() => new Error('Missing id'));
+    }
+    const url = `${environment.backendUrl}compiler/j/${compilerId}`;
+    return this.http.delete(url, { observe: 'response' }).pipe(
+      map(() => undefined),
+      catchError((error: HttpErrorResponse) =>
+        throwError(() => new Error(error.error?.message ?? error.message ?? 'Cancel failed'))
+      )
+    );
+  }
+
   private getBytes(files: IdeFile[]): number {
     return files.reduce(
       (acc, cur) => acc + new TextEncoder().encode(cur.fileContent).length,
